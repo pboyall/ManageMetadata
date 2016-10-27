@@ -68,5 +68,10 @@ namespace ManageMetadata
             mm.sourcePath = "H:\\RATests\\code";
             mm.folderPath = "H:\\RATests\\PubForms";
         }
+
+        private void btnValClickstreams_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -28,13 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("80.123.KeyMessage1");
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("HUM_ABV_LO_02", new System.Windows.Forms.TreeNode[] {
-            treeNode5});
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("HUM_ABV_LO_03");
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("HUM_ABV_LO", new System.Windows.Forms.TreeNode[] {
-            treeNode6,
-            treeNode7});
+            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("80.123.KeyMessage1");
+            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("HUM_ABV_LO_02", new System.Windows.Forms.TreeNode[] {
+            treeNode1});
+            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("HUM_ABV_LO_03");
+            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("HUM_ABV_LO", new System.Windows.Forms.TreeNode[] {
+            treeNode2,
+            treeNode3});
             this.btnMakeMetaFromPub = new System.Windows.Forms.Button();
             this.btnValidateKeyMessageNames = new System.Windows.Forms.Button();
             this.btnExtractFromPDF = new System.Windows.Forms.Button();
@@ -87,6 +87,7 @@
             this.btnValClickstreams.TabIndex = 3;
             this.btnValClickstreams.Text = "ValidateClickstreams";
             this.btnValClickstreams.UseVisualStyleBackColor = true;
+            this.btnValClickstreams.Click += new System.EventHandler(this.btnValClickstreams_Click);
             // 
             // btnValKeyMsgNames
             // 
@@ -121,16 +122,16 @@
             // 
             this.trvPresentations.Location = new System.Drawing.Point(395, 8);
             this.trvPresentations.Name = "trvPresentations";
-            treeNode5.Name = "80.123.KeyMessage1";
-            treeNode5.Text = "80.123.KeyMessage1";
-            treeNode6.Name = "HUM_ABV_LO_02";
-            treeNode6.Text = "HUM_ABV_LO_02";
-            treeNode7.Name = "HUM_ABV_LO_03";
-            treeNode7.Text = "HUM_ABV_LO_03";
-            treeNode8.Name = "HUM_ABV_LO";
-            treeNode8.Text = "HUM_ABV_LO";
+            treeNode1.Name = "80.123.KeyMessage1";
+            treeNode1.Text = "80.123.KeyMessage1";
+            treeNode2.Name = "HUM_ABV_LO_02";
+            treeNode2.Text = "HUM_ABV_LO_02";
+            treeNode3.Name = "HUM_ABV_LO_03";
+            treeNode3.Text = "HUM_ABV_LO_03";
+            treeNode4.Name = "HUM_ABV_LO";
+            treeNode4.Text = "HUM_ABV_LO";
             this.trvPresentations.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode8});
+            treeNode4});
             this.trvPresentations.Size = new System.Drawing.Size(369, 223);
             this.trvPresentations.TabIndex = 6;
             // 
