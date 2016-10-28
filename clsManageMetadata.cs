@@ -12,11 +12,17 @@ namespace ManageMetadata
 {
     class clsManageMetadata
     {
-        public string KeyMessageCol = "K";      //Column containing zip file names.  Do we need to validate Zip file names against the Key Message Name column too?
+        //Config constants (move to config file later)
+
+        public string KeyMessageCol = "K";              //Column containing zip file names.  Do we need to validate Zip file names against the Key Message Name column too?
         public string PresIDCell = "C20";
         public string PresTab = "Presentation-Slide metadata";
-        public int keymessagestartrow = 36;         //Row where key messages start in publishing form
+        public int keymessagestartrow = 36;             //Row where key messages start in publishing form
         public string logfile = "ValidationErrors.log";
+        public string pubPath = "PUB_FORM";             //Folder containing publishing forms
+        public string metaPath = "METADATA";             //Folder containing metadata forms
+        public int[] NonMetadataColumns = { 1, 9, 11 };     //Index of columns which do not appear in metadata sheet but do appear in publishing form
+        public bool recusePubFolders = false;               //Whether or not to recurse folders in the publising forms
 
         public string folderPath;           //Top path which contains publishign forms and metadata.
         public string sourcePath;
@@ -28,18 +34,30 @@ namespace ManageMetadata
         private string  pubfolder;     
         private string metafolder;     
 
+
         public clsManageMetadata()
         {
             //Hard code pubfolder and metafolder based on parent
-            pubfolder = folderPath + "\\" + "PUB_FORM";
-            metafolder = folderPath + "\\" + "PUB_FORM";
+            pubfolder = folderPath + "\\" + pubPath;
+            metafolder = folderPath + "\\" + metaPath;
 
             folders = new Dictionary<string, bool>();
             keymessages = new Dictionary<string, string>();
             pubforms = new Dictionary<string, string>();
         }
 
-        public void ExtractKeyMessage(string filename)
+        public void validateKeyMessages()
+        {
+            //Iterate Source Folder Path
+            ListFolderNames();
+            //Iterate Key Message Names in Spreadsheets
+            ExtractKeyMessages();
+            //Compare the spreadsheet names with the source names
+            CompareKeyMessages();
+
+        }
+
+        private void ExtractKeyMessage(string filename)
         {
             //Extract key messages from publishing form
             string PresID="";
@@ -76,7 +94,7 @@ namespace ManageMetadata
         }
 
         //iterate publishing forms and extract key messages
-        public void ExtractKeyMessages()
+        private void ExtractKeyMessages()
         {
 
             //List publising forms
@@ -89,7 +107,7 @@ namespace ManageMetadata
         }
 
 //List Source Code Folders
-        public void ListFolderNames()
+        private void ListFolderNames()
         {
             //List key message names in given folder
             //Default to unvalidated
@@ -112,7 +130,7 @@ namespace ManageMetadata
         }
 
 //List the names of the Publishing forms
-        public void listFileNames()
+        private void listFileNames()
         {
             /*  var files = from file in Directory.EnumerateFiles(@"c:\", "*.txt", SearchOption.AllDirectories)
                           from line in File.ReadLines(file)
@@ -123,7 +141,13 @@ namespace ManageMetadata
                               Line = line
                           };
               */
-        var files = from file in Directory.EnumerateFiles(folderPath, "*.xls*", SearchOption.AllDirectories) select Path.GetFileName(file);
+            System.IO.SearchOption RecurseFolders = SearchOption.TopDirectoryOnly;
+            if(recusePubFolders)
+            { RecurseFolders = SearchOption.AllDirectories; }
+            else
+            { RecurseFolders = SearchOption.TopDirectoryOnly;}
+
+        var files = from file in Directory.EnumerateFiles(folderPath, "*.xls*", RecurseFolders) select Path.GetFileName(file);
             foreach (var f in files)
             {
                 //TODO: Open File with Spreadsheet Light and get the Presentation Name
@@ -131,7 +155,11 @@ namespace ManageMetadata
             }
         }
 
-        public void CompareKeyMessages()
+        
+
+        //Check Key Messages in Sheets against Key Messages in Source Code
+
+        private void CompareKeyMessages()
         {
             missingfolders = new Dictionary<string, string>();
             HashSet<string> lines = new HashSet<string>() ;
@@ -174,17 +202,31 @@ namespace ManageMetadata
 
         }
 
+        //For each sheet in the publishing form folder, create a metadata sheet by deleting the unneeded columns
         public void createMetadata()
         {
-            //For each sheet in the publishing form folder, create a metadata sheet by deleting the unneeded columns
-             foreach(var f in pubforms) { 
-                SLDocument sl = new SLDocument(f.Value);
-                // delete 1 column at column 6
-                sl.DeleteColumn(6, 1);
-                sl.SaveAs("Metadata.xlsx");
+            listFileNames();
+            foreach (var f in pubforms) { 
+                SLDocument sl = new SLDocument(folderPath + "\\" + f.Value);
+                // delete 1 column at column 6 - sl.DeleteColumn(6, 1);
+                foreach (var i in NonMetadataColumns)
+                {
+                    sl.DeleteColumn(i, 1);
+                }
+                sl.SaveAs(folderPath + "\\" + f.Value + " - Metadata.xlsx");
             }
         }
 
+
+        //Where names have been updated in publishing form, rename source zip files
+        public void RenameZips()
+        {
+            ListFolderNames();
+            listFileNames();
+
+
+
+        }
 
     }
 }

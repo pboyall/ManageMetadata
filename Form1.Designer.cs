@@ -48,6 +48,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.btnBrowseSource = new System.Windows.Forms.Button();
             this.lblSource = new System.Windows.Forms.Label();
+            this.btnMakeSourceFolders = new System.Windows.Forms.Button();
+            this.btnRenameZips = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnMakeMetaFromPub
@@ -172,11 +174,33 @@
             this.lblSource.TabIndex = 8;
             this.lblSource.Text = "Source";
             // 
+            // btnMakeSourceFolders
+            // 
+            this.btnMakeSourceFolders.Location = new System.Drawing.Point(192, 121);
+            this.btnMakeSourceFolders.Name = "btnMakeSourceFolders";
+            this.btnMakeSourceFolders.Size = new System.Drawing.Size(174, 23);
+            this.btnMakeSourceFolders.TabIndex = 11;
+            this.btnMakeSourceFolders.Text = "MakeSourceFolders";
+            this.btnMakeSourceFolders.UseVisualStyleBackColor = true;
+            this.btnMakeSourceFolders.Click += new System.EventHandler(this.btnMakeSourceFolders_Click);
+            // 
+            // btnRenameZips
+            // 
+            this.btnRenameZips.Location = new System.Drawing.Point(192, 150);
+            this.btnRenameZips.Name = "btnRenameZips";
+            this.btnRenameZips.Size = new System.Drawing.Size(174, 23);
+            this.btnRenameZips.TabIndex = 12;
+            this.btnRenameZips.Text = "RenameZips";
+            this.btnRenameZips.UseVisualStyleBackColor = true;
+            this.btnRenameZips.Click += new System.EventHandler(this.btnRenameZips_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(776, 261);
+            this.Controls.Add(this.btnRenameZips);
+            this.Controls.Add(this.btnMakeSourceFolders);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.btnBrowseSource);
             this.Controls.Add(this.lblSource);
@@ -212,6 +236,8 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button btnBrowseSource;
         private System.Windows.Forms.Label lblSource;
+        private System.Windows.Forms.Button btnMakeSourceFolders;
+        private System.Windows.Forms.Button btnRenameZips;
     }
 }
 

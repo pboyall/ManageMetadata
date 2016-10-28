@@ -22,7 +22,8 @@ namespace ManageMetadata
 
         private void btnMakeMetaFromPubClick(object sender, EventArgs e)
         {
-            mm.listFileNames();
+            mm.createMetadata();
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -43,13 +44,7 @@ namespace ManageMetadata
 
         private void btnValidateKeyMessageNames_Click(object sender, EventArgs e)
         {
-            //Iterate Source Folder Path
-            mm.ListFolderNames();
-            //Iterate Key Message Names in Spreadsheets
-            mm.ExtractKeyMessages();
-            //Compare the spreadsheet names with the source names
-            mm.CompareKeyMessages();
-
+            mm.validateKeyMessages();
         }
 
         private void btnBrowseSource_Click(object sender, EventArgs e)
@@ -65,11 +60,21 @@ namespace ManageMetadata
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            mm.sourcePath = "H:\\RATests\\code";
-            mm.folderPath = "H:\\RATests\\PubForms";
+            mm.sourcePath = "G:\\Code\\ra_uk_2016_veeva";
+            mm.folderPath = "G:\\ManageMetadataSource\\Publishing Forms";
         }
 
         private void btnValClickstreams_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnMakeSourceFolders_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnRenameZips_Click(object sender, EventArgs e)
         {
 
         }
