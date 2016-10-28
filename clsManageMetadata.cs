@@ -215,7 +215,7 @@ namespace ManageMetadata
         //For each sheet in the publishing form folder, create a metadata sheet by deleting the unneeded columns
         public void createMetadata()
         {
-            listFileNames();
+            listFileNames(folderPath);
             foreach (var f in pubforms) { 
                 SLDocument sl = new SLDocument(folderPath + "\\" + f.Value);
                 // delete 1 column at column 6 - sl.DeleteColumn(6, 1);
@@ -234,10 +234,26 @@ namespace ManageMetadata
             //Get list of key messages which are in publishing forms and not in folders
             validateKeyMessages();
             //How do we map from one to the other?  Need a mapping file - use the previous version of the publishing forms
-
-
-
+            listFileNames(mappingfiles);
+            ExtractKeyMessage(mappingfiles, false);
+            //Compare old and new Key message lists to generate a mapping dictionary
+            Dictionary<string, string> mapmessages = new Dictionary<string, string>();
+            
         }
+
+        private void MapKeys(ref Dictionary<string, string> mapmessages)
+        {
+            foreach (var v in keymessages)
+            {
+                if (!oldkeymessages.ContainsKey(v.Key))
+                {
+                    //Key Message has changed name
+                    //Look on same line in oldkeymessages spreadsheet
+                    mapmessages.Add(v.Key, );
+                }
+            }
+        }
+
 
     }
 }
