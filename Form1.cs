@@ -78,5 +78,21 @@ namespace ManageMetadata
         {
 
         }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnMapping_Click(object sender, EventArgs e)
+        {
+            //Duplicated code
+            FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
+            if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
+            {
+                mm.mappingfiles = folderBrowserDialog1.SelectedPath;
+                lblMapping.Text = mm.mappingfiles;
+            }
+        }
     }
 }

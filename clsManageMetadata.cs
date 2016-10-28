@@ -19,15 +19,18 @@ namespace ManageMetadata
         public string PresTab = "Presentation-Slide metadata";
         public int keymessagestartrow = 36;             //Row where key messages start in publishing form
         public string logfile = "ValidationErrors.log";
-        public string pubPath = "PUB_FORM";             //Folder containing publishing forms
-        public string metaPath = "METADATA";             //Folder containing metadata forms
+        public string pubPath = "PUB_FORM";                 //Folder containing publishing forms
+        public string metaPath = "METADATA";                //Folder containing metadata forms
+        public string mappingfiles = "";                    //Folder containing original publishing forms (pre renaming of key messages)
         public int[] NonMetadataColumns = { 1, 9, 11 };     //Index of columns which do not appear in metadata sheet but do appear in publishing form
         public bool recusePubFolders = false;               //Whether or not to recurse folders in the publising forms
+        
 
         public string folderPath;           //Top path which contains publishign forms and metadata.
         public string sourcePath;
         //Don't really need full dictionary but gives some future proofing
         private Dictionary<string, string> keymessages; //KeyMessage, PresID    //Zip file names, for now
+        private Dictionary<string, string> oldkeymessages; //KeyMessage, PresID    //Previous Zip file names, for now
         private Dictionary<string, bool> folders;     //KeyMessage, Validated
         private Dictionary<string, string> missingfolders; //KeyMessage, PresID  Exist in folders but not in spreadsheets
         private Dictionary<string, string> pubforms;     //Filename, PresentationID
@@ -46,18 +49,19 @@ namespace ManageMetadata
             pubforms = new Dictionary<string, string>();
         }
 
+        //Confirm that Key Messages in current publishing forms are also contained in the Source Code Folders
         public void validateKeyMessages()
         {
             //Iterate Source Folder Path
             ListFolderNames();
             //Iterate Key Message Names in Spreadsheets
-            ExtractKeyMessages();
+            ExtractKeyMessages(folderPath);
             //Compare the spreadsheet names with the source names
             CompareKeyMessages();
 
         }
 
-        private void ExtractKeyMessage(string filename)
+        private void ExtractKeyMessage(string filename, bool current = true)
         {
             //Extract key messages from publishing form
             string PresID="";
@@ -76,8 +80,14 @@ namespace ManageMetadata
                 if (kmzip.Contains(".zip"))
                 {
                     try { 
-                    keymessages.Add(kmzip.Replace(".zip", ""), PresID);
-                    }catch(Exception e)
+                        if (current) { 
+                            keymessages.Add(kmzip.Replace(".zip", ""), PresID);
+                        }else
+                        {
+                            oldkeymessages.Add(kmzip.Replace(".zip", ""), PresID);
+                        }
+                    }
+                    catch(Exception e)
                     {
                         if(e.HResult == -2147024809)
                         {
@@ -94,11 +104,11 @@ namespace ManageMetadata
         }
 
         //iterate publishing forms and extract key messages
-        private void ExtractKeyMessages()
+        private void ExtractKeyMessages(string folder)
         {
 
             //List publising forms
-            listFileNames();           //Populate list of Publishing Form spreadsheets
+            listFileNames(folder);           //Populate list of Publishing Form spreadsheets
             //Extract KeyMessages from them
             foreach(var f in pubforms)
             {
@@ -130,7 +140,7 @@ namespace ManageMetadata
         }
 
 //List the names of the Publishing forms
-        private void listFileNames()
+        private void listFileNames(string folder)
         {
             /*  var files = from file in Directory.EnumerateFiles(@"c:\", "*.txt", SearchOption.AllDirectories)
                           from line in File.ReadLines(file)
@@ -147,7 +157,7 @@ namespace ManageMetadata
             else
             { RecurseFolders = SearchOption.TopDirectoryOnly;}
 
-        var files = from file in Directory.EnumerateFiles(folderPath, "*.xls*", RecurseFolders) select Path.GetFileName(file);
+        var files = from file in Directory.EnumerateFiles(folder, "*.xls*", RecurseFolders) select Path.GetFileName(file);
             foreach (var f in files)
             {
                 //TODO: Open File with Spreadsheet Light and get the Presentation Name
@@ -221,8 +231,9 @@ namespace ManageMetadata
         //Where names have been updated in publishing form, rename source zip files
         public void RenameZips()
         {
-            ListFolderNames();
-            listFileNames();
+            //Get list of key messages which are in publishing forms and not in folders
+            validateKeyMessages();
+            //How do we map from one to the other?  Need a mapping file - use the previous version of the publishing forms
 
 
 

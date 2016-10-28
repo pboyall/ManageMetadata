@@ -50,6 +50,8 @@
             this.lblSource = new System.Windows.Forms.Label();
             this.btnMakeSourceFolders = new System.Windows.Forms.Button();
             this.btnRenameZips = new System.Windows.Forms.Button();
+            this.btnMapping = new System.Windows.Forms.Button();
+            this.lblMapping = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnMakeMetaFromPub
@@ -194,11 +196,33 @@
             this.btnRenameZips.UseVisualStyleBackColor = true;
             this.btnRenameZips.Click += new System.EventHandler(this.btnRenameZips_Click);
             // 
+            // btnMapping
+            // 
+            this.btnMapping.Location = new System.Drawing.Point(269, 61);
+            this.btnMapping.Name = "btnMapping";
+            this.btnMapping.Size = new System.Drawing.Size(75, 23);
+            this.btnMapping.TabIndex = 14;
+            this.btnMapping.Text = "browse";
+            this.btnMapping.UseVisualStyleBackColor = true;
+            this.btnMapping.Click += new System.EventHandler(this.btnMapping_Click);
+            // 
+            // lblMapping
+            // 
+            this.lblMapping.AutoSize = true;
+            this.lblMapping.Location = new System.Drawing.Point(180, 66);
+            this.lblMapping.Name = "lblMapping";
+            this.lblMapping.Size = new System.Drawing.Size(48, 13);
+            this.lblMapping.TabIndex = 13;
+            this.lblMapping.Text = "Mapping";
+            this.lblMapping.Click += new System.EventHandler(this.label3_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(776, 261);
+            this.Controls.Add(this.btnMapping);
+            this.Controls.Add(this.lblMapping);
             this.Controls.Add(this.btnRenameZips);
             this.Controls.Add(this.btnMakeSourceFolders);
             this.Controls.Add(this.label2);
@@ -238,6 +262,8 @@
         private System.Windows.Forms.Label lblSource;
         private System.Windows.Forms.Button btnMakeSourceFolders;
         private System.Windows.Forms.Button btnRenameZips;
+        private System.Windows.Forms.Button btnMapping;
+        private System.Windows.Forms.Label lblMapping;
     }
 }
 
