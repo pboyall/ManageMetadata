@@ -22,6 +22,7 @@ namespace ManageMetadata
 
         private void btnMakeMetaFromPubClick(object sender, EventArgs e)
         {
+            mm.initialise();
             mm.createMetadata();
             
         }
@@ -44,6 +45,7 @@ namespace ManageMetadata
 
         private void btnValidateKeyMessageNames_Click(object sender, EventArgs e)
         {
+            mm.initialise();
             mm.validateKeyMessages();
         }
 
@@ -77,6 +79,7 @@ namespace ManageMetadata
 
         private void btnRenameZips_Click(object sender, EventArgs e)
         {
+            mm.initialise();
             mm.RenameZips();
         }
 

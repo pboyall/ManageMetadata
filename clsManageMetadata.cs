@@ -8,6 +8,8 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Spreadsheet;
 using SpreadsheetLight;
 
+//TODO: Add Logging
+
 namespace ManageMetadata
 {
     class clsManageMetadata
@@ -59,7 +61,12 @@ namespace ManageMetadata
             pubfolder = folderPath + "\\" + pubPath;
             metafolder = folderPath + "\\" + metaPath;
             //Not using the above yet as don't have a standard!!!
+            initialise();
+        }
 
+        //Redo all dictionaries
+        public void initialise()
+        {
             sourcefolders = new Dictionary<string, bool>();
             keymessages = new SortedDictionary<string, string>();
             oldkeymessages = new SortedDictionary<string, string>();
@@ -76,7 +83,6 @@ namespace ManageMetadata
             ExtractKeyMessages(pubfolder);
             //Compare the spreadsheet names with the source names
             CompareKeyMessages();
-
         }
 
         private void ExtractKeyMessage(string filename, string thisFolder, bool current = true)
@@ -297,42 +303,9 @@ namespace ManageMetadata
                 catch { }
                 //Now go through every source code file and rename any occurence of the renamed zips
                 //Open each html and js file
-                var files = from file in Directory.EnumerateFiles(sourcePath, "*.html", SearchOption.AllDirectories)
-                            from line in File.ReadAllLines(file)
-                            where line.Contains(f.Value)
-                            select new
-                            {
-                                File = file,
-                                Line = line
-                            };
-                foreach(var g in files)
-                {
-                    //Optimise by only doing any given file once.
-                    //string fileContents = System.IO.File.ReadAllText(g.File);
-                    string gotoreplace = "gotoSlide(71.5_RA_HUM_SEG8_UK_EN_CONCERTO MTX DOSES_LO.zip,";
-                    string packagereplace = "pkg_id: \"10_RA_HUM_SEG8_UK_EN_GLOBAL PI_LO.zip\"";
-                    string fileContents = "";
-                    using (FileStream inStream = new FileStream(g.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                    {
-                        using (StreamReader sr = new StreamReader(inStream))
-                        {
-                            fileContents = sr.ReadToEnd();
-                            sr.Close();
-                            sr.Dispose();
-                        }
-                        inStream.Close();
-                        inStream.Dispose();
-                    }
-                    fileContents = fileContents.Replace("gotoSlide(" + f.Value + ".zip", "gotoSlide(" + f.Key + ".zip");
-                    fileContents = fileContents.Replace("pkg_id: \"" + f.Value + ".zip\"", "pkg_id: \"" + f.Key+ ".zip\"");
-                    System.IO.File.WriteAllText(g.File, fileContents);
-                }
-
+                replaceLinks("*.html", mapmessages);
+                replaceLinks("*.js", mapmessages);
             }
-
-
-            //Write out a log
-
         }
 
         private void replaceLinks(string filetype, Dictionary<string, string> mapmessages)
