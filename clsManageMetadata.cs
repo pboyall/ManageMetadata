@@ -19,34 +19,52 @@ namespace ManageMetadata
         public string PresTab = "Presentation-Slide metadata";
         public int keymessagestartrow = 36;             //Row where key messages start in publishing form
         public string logfile = "ValidationErrors.log";
-        public string pubPath = "PUB_FORM";                 //Folder containing publishing forms
+        public string pubPath = "";                 //Folder containing publishing forms - PUB_FORM
         public string metaPath = "METADATA";                //Folder containing metadata forms
         public string mappingfiles = "";                    //Folder containing original publishing forms (pre renaming of key messages)
         public int[] NonMetadataColumns = { 1, 9, 11 };     //Index of columns which do not appear in metadata sheet but do appear in publishing form
         public bool recusePubFolders = false;               //Whether or not to recurse folders in the publising forms
-        
 
-        public string folderPath;           //Top path which contains publishign forms and metadata.
-        public string sourcePath;
+
+        private string folderPath;           //Top path which contains publishign forms and metadata.
+        public string sourcePath;           //Contains code
         //Don't really need full dictionary but gives some future proofing
-        private Dictionary<string, string> keymessages; //KeyMessage, PresID    //Zip file names, for now
-        private Dictionary<string, string> oldkeymessages; //KeyMessage, PresID    //Previous Zip file names, for now
-        private Dictionary<string, bool> folders;     //KeyMessage, Validated
-        private Dictionary<string, string> missingfolders; //KeyMessage, PresID  Exist in folders but not in spreadsheets
-        private Dictionary<string, string> pubforms;     //Filename, PresentationID
+        private SortedDictionary<string, string> keymessages;           //KeyMessage, PresID    //Zip file names, for now
+        private SortedDictionary<string, string> oldkeymessages;        //KeyMessage, PresID    //Previous Zip file names, for now
+        private Dictionary<string, bool> sourcefolders;                  //KeyMessage, Validated   //Source Code Folders
+        private SortedDictionary<string, string> missingfolders;        //KeyMessage, PresID  Exist in folders but not in spreadsheets
+        private SortedDictionary<string, string> pubforms;              //Filename, PresentationID     //Actual Publishing Forms
+        private SortedDictionary<string, string> previouspubforms;     //Filename, PresentationID       //Previous Publishing Forms (used when doing mass rename)
         private string  pubfolder;     
-        private string metafolder;     
+        private string metafolder;
 
+        public string FolderPath
+        {
+            get
+            {
+                return folderPath;
+            }
+
+            set
+            {
+                folderPath = value;
+                pubfolder = folderPath + "\\" + pubPath;
+                metafolder = folderPath + "\\" + metaPath;
+            }
+        }
 
         public clsManageMetadata()
         {
             //Hard code pubfolder and metafolder based on parent
             pubfolder = folderPath + "\\" + pubPath;
             metafolder = folderPath + "\\" + metaPath;
+            //Not using the above yet as don't have a standard!!!
 
-            folders = new Dictionary<string, bool>();
-            keymessages = new Dictionary<string, string>();
-            pubforms = new Dictionary<string, string>();
+            sourcefolders = new Dictionary<string, bool>();
+            keymessages = new SortedDictionary<string, string>();
+            oldkeymessages = new SortedDictionary<string, string>();
+            pubforms = new SortedDictionary<string, string>();
+            previouspubforms = new SortedDictionary<string, string>();
         }
 
         //Confirm that Key Messages in current publishing forms are also contained in the Source Code Folders
@@ -55,17 +73,17 @@ namespace ManageMetadata
             //Iterate Source Folder Path
             ListFolderNames();
             //Iterate Key Message Names in Spreadsheets
-            ExtractKeyMessages(folderPath);
+            ExtractKeyMessages(pubfolder);
             //Compare the spreadsheet names with the source names
             CompareKeyMessages();
 
         }
 
-        private void ExtractKeyMessage(string filename, bool current = true)
+        private void ExtractKeyMessage(string filename, string thisFolder, bool current = true)
         {
             //Extract key messages from publishing form
             string PresID="";
-            SLDocument pubform = new SLDocument(folderPath + "\\" + filename);
+            SLDocument pubform = new SLDocument(thisFolder + "\\" + filename);
             SLWorksheetStatistics stats1 = pubform.GetWorksheetStatistics();
             //Get Presentation ID
 
@@ -103,20 +121,32 @@ namespace ManageMetadata
             }
         }
 
+        //TODO: Refactor these two functions into one - only difference is the dictionary being iterated
         //iterate publishing forms and extract key messages
-        private void ExtractKeyMessages(string folder)
+        private void ExtractKeyMessages(string folder, bool current=true)
         {
-
             //List publising forms
-            listFileNames(folder);           //Populate list of Publishing Form spreadsheets
+            listFileNames(folder, current);           //Populate list of Publishing Form spreadsheets
             //Extract KeyMessages from them
-            foreach(var f in pubforms)
+            foreach (var f in pubforms)
             {
-                ExtractKeyMessage(f.Value);
+                ExtractKeyMessage(f.Value, folder, current);
             }
         }
 
-//List Source Code Folders
+        private void ExtractOldKeyMessages(string folder, bool current = false)
+        {
+            //List publising forms
+            listFileNames(folder, current);           //Populate list of Publishing Form spreadsheets
+            //Extract KeyMessages from them
+            foreach (var f in previouspubforms)
+            {
+                ExtractKeyMessage(f.Value, folder, current);
+            }
+        }
+
+
+        //List Source Code Folders
         private void ListFolderNames()
         {
             //List key message names in given folder
@@ -126,7 +156,7 @@ namespace ManageMetadata
                 List<string> dirs = new List<string>(Directory.EnumerateDirectories(sourcePath));
                 foreach (var dir in dirs)
                 {
-                    folders.Add(dir.Substring(dir.LastIndexOf("\\") + 1), false);
+                    sourcefolders.Add(dir.Substring(dir.LastIndexOf("\\") + 1), false);
                 }
             }
             catch (UnauthorizedAccessException UAEx)
@@ -140,7 +170,7 @@ namespace ManageMetadata
         }
 
 //List the names of the Publishing forms
-        private void listFileNames(string folder)
+        private void listFileNames(string folder, bool current = true)
         {
             /*  var files = from file in Directory.EnumerateFiles(@"c:\", "*.txt", SearchOption.AllDirectories)
                           from line in File.ReadLines(file)
@@ -157,11 +187,11 @@ namespace ManageMetadata
             else
             { RecurseFolders = SearchOption.TopDirectoryOnly;}
 
-        var files = from file in Directory.EnumerateFiles(folder, "*.xls*", RecurseFolders) select Path.GetFileName(file);
+            var files = from file in Directory.EnumerateFiles(folder, "*.xls*", RecurseFolders) select Path.GetFileName(file);
             foreach (var f in files)
             {
                 //TODO: Open File with Spreadsheet Light and get the Presentation Name
-                pubforms.Add("DummyPresName" + f, f);
+                if (current) { pubforms.Add("DummyPresName" + f, f); }else { previouspubforms.Add("DummyPresName" + f, f); }
             }
         }
 
@@ -171,7 +201,7 @@ namespace ManageMetadata
 
         private void CompareKeyMessages()
         {
-            missingfolders = new Dictionary<string, string>();
+            missingfolders = new SortedDictionary<string, string>();
             HashSet<string> lines = new HashSet<string>() ;
             lines.Add("Key Messages Missing from folders:");
             string[] headermessage = new string[] { "Key Messages found in folders but not found in spreadsheet"};
@@ -179,9 +209,9 @@ namespace ManageMetadata
             //Don't use a clever (big O) comparison as may not be a perfect match
             foreach (var v in keymessages)
             {
-                if (folders.ContainsKey(v.Key))
+                if (sourcefolders.ContainsKey(v.Key))
                 {
-                    folders[v.Key] = true;      //Flag as validated
+                    sourcefolders[v.Key] = true;      //Flag as validated
                 }
                 else
                 {
@@ -192,10 +222,10 @@ namespace ManageMetadata
 
             //Identify any folders that are still invalid (i.e. not key message in spreadsheet matches)
 
-            if (folders.ContainsValue(false))
+            if (sourcefolders.ContainsValue(false))
             {
                 // var matches = dict.Where(pair => pair.Value.Contains("abc")) .Select(pair => pair.Key);
-                var matches = folders.Where(pair => pair.Value != true).Select(pair => pair.Key);
+                var matches = sourcefolders.Where(pair => pair.Value != true).Select(pair => pair.Key);
                 Console.Write(matches.ToString());
                 System.IO.File.WriteAllLines(folderPath + "\\" + logfile, headermessage);
                 System.IO.File.AppendAllLines(folderPath + "\\" + logfile, matches.ToArray<string>());
@@ -231,29 +261,121 @@ namespace ManageMetadata
         //Where names have been updated in publishing form, rename source zip files
         public void RenameZips()
         {
+            Dictionary<string, string> mapmessages = new Dictionary<string, string>();
             //Get list of key messages which are in publishing forms and not in folders
             validateKeyMessages();
             //How do we map from one to the other?  Need a mapping file - use the previous version of the publishing forms
-            listFileNames(mappingfiles);
-            ExtractKeyMessage(mappingfiles, false);
+            ExtractOldKeyMessages(mappingfiles, false);
             //Compare old and new Key message lists to generate a mapping dictionary
-            Dictionary<string, string> mapmessages = new Dictionary<string, string>();
-            
+            MapKeys(ref mapmessages);
+            //Go through source folders and rename those found in mapmessages
+
         }
 
         private void MapKeys(ref Dictionary<string, string> mapmessages)
         {
+            var s = new SortedList<string, string>(keymessages);
+
+            //Compare each current current key message
             foreach (var v in keymessages)
             {
+                //and see if it existed previous
                 if (!oldkeymessages.ContainsKey(v.Key))
                 {
                     //Key Message has changed name
-                    //Look on same line in oldkeymessages spreadsheet
-                    mapmessages.Add(v.Key, );
+                    //Look on same line in oldkeymessages spreadsheet and add to dictionary of changed messages
+                    int index = s.IndexOfKey(v.Key);
+                    mapmessages.Add(v.Key, oldkeymessages.ElementAt(index).Key);
                 }
+            }
+            //For each changed message, rename the folder
+            foreach (var f in mapmessages) {
+                try
+                {
+                    Directory.Move(sourcePath + "\\" + f.Value, sourcePath + "\\" + f.Key);
+                }
+                catch { }
+                //Now go through every source code file and rename any occurence of the renamed zips
+                //Open each html and js file
+                var files = from file in Directory.EnumerateFiles(sourcePath, "*.html", SearchOption.AllDirectories)
+                            from line in File.ReadAllLines(file)
+                            where line.Contains(f.Value)
+                            select new
+                            {
+                                File = file,
+                                Line = line
+                            };
+                foreach(var g in files)
+                {
+                    //Optimise by only doing any given file once.
+                    //string fileContents = System.IO.File.ReadAllText(g.File);
+                    string gotoreplace = "gotoSlide(71.5_RA_HUM_SEG8_UK_EN_CONCERTO MTX DOSES_LO.zip,";
+                    string packagereplace = "pkg_id: \"10_RA_HUM_SEG8_UK_EN_GLOBAL PI_LO.zip\"";
+                    string fileContents = "";
+                    using (FileStream inStream = new FileStream(g.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    {
+                        using (StreamReader sr = new StreamReader(inStream))
+                        {
+                            fileContents = sr.ReadToEnd();
+                            sr.Close();
+                            sr.Dispose();
+                        }
+                        inStream.Close();
+                        inStream.Dispose();
+                    }
+                    fileContents = fileContents.Replace("gotoSlide(" + f.Value + ".zip", "gotoSlide(" + f.Key + ".zip");
+                    fileContents = fileContents.Replace("pkg_id: \"" + f.Value + ".zip\"", "pkg_id: \"" + f.Key+ ".zip\"");
+                    System.IO.File.WriteAllText(g.File, fileContents);
+                }
+
+            }
+
+
+            //Write out a log
+
+        }
+
+        private void replaceLinks(string filetype, Dictionary<string, string> mapmessages)
+        {
+            foreach (var f in mapmessages) { 
+                        //Open each html and js file
+                        var files = from file in Directory.EnumerateFiles(sourcePath, filetype, SearchOption.AllDirectories)
+                                from line in File.ReadAllLines(file)
+                                where line.Contains(f.Value)
+                                select new
+                                {
+                                    File = file,
+                                    Line = line
+                                };
+                    foreach (var g in files)
+                    {
+                        //Optimise by only doing any given file once.
+                        string fileContents = System.IO.File.ReadAllText(g.File);
+                        fileContents = fileContents.Replace("gotoSlide(" + f.Value + ".zip", "gotoSlide(" + f.Key + ".zip");
+                        fileContents = fileContents.Replace("pkg_id: \"" + f.Value + ".zip\"", "pkg_id: \"" + f.Key + ".zip\"");
+                        System.IO.File.WriteAllText(g.File, fileContents);
+                    }
             }
         }
 
-
+        }
     }
-}
+
+
+
+
+/*
+ *Code to work around locking issues
+                        string gotoreplace = "gotoSlide(71.5_RA_HUM_SEG8_UK_EN_CONCERTO MTX DOSES_LO.zip,";
+                        string packagereplace = "pkg_id: \"10_RA_HUM_SEG8_UK_EN_GLOBAL PI_LO.zip\"";
+ *                        using (FileStream inStream = new FileStream(g.File, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        {
+                            using (StreamReader sr = new StreamReader(inStream))
+                            {
+                                fileContents = sr.ReadToEnd();
+                                sr.Close();
+                                sr.Dispose();
+                            }
+                            inStream.Close();
+                            inStream.Dispose();
+                        }*/

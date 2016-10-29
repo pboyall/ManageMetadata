@@ -37,8 +37,8 @@ namespace ManageMetadata
             FolderBrowserDialog folderBrowserDialog1 = new FolderBrowserDialog();
             if (folderBrowserDialog1.ShowDialog() == DialogResult.OK)
             {
-                mm.folderPath = folderBrowserDialog1.SelectedPath;
-                lblFolder.Text = mm.folderPath;
+                mm.FolderPath = folderBrowserDialog1.SelectedPath;
+                lblFolder.Text = mm.FolderPath;
             }
         }
 
@@ -61,7 +61,8 @@ namespace ManageMetadata
         private void Form1_Load(object sender, EventArgs e)
         {
             mm.sourcePath = "G:\\Code\\ra_uk_2016_veeva";
-            mm.folderPath = "G:\\ManageMetadataSource\\Publishing Forms";
+            mm.FolderPath = "G:\\ManageMetadataSource\\Publishing Forms";
+            mm.mappingfiles = "G:\\ManageMetadataSource\\Original Publishing Forms";
         }
 
         private void btnValClickstreams_Click(object sender, EventArgs e)
@@ -76,7 +77,7 @@ namespace ManageMetadata
 
         private void btnRenameZips_Click(object sender, EventArgs e)
         {
-
+            mm.RenameZips();
         }
 
         private void label3_Click(object sender, EventArgs e)
