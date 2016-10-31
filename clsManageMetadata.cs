@@ -19,17 +19,17 @@ namespace ManageMetadata
 
         public string KeyMessageCol = "K";              //Column containing zip file names in publishing form.  Do we need to validate Zip file names against the Key Message Name column too?
         public string pubclickstreamkeycolumn = "D";          //Column containing clickstream key message numbers in publishing form
-        public string pubkeynumbercolumn = "B";          //Column containing presentation tab key message numbers in publishing form
+        public string pubkeynumbercolumn = "C";          //Column containing presentation tab key message numbers in publishing form
         public string pubclickstreamcolumn = "A";          //Column containing clickstream names in publishing form
 
         public string clickstreamcolumn = "F";          //Column containing clickstream names in clickstream report
         public string clickstreamkeycolumn = "D";          //Column containing clickstream key message names in clickstream report
         public string prescolumn = "K";                 //Column containing presentation IDs in presentation report
 
-        public string PresIDCell = "C20";
+        public string PresIDCell = "C22";
         public string PresTab = "Presentation-Slide metadata";
         public string ClickTab = "clickstream data";         
-        public int keymessagestartrow = 36;             //Row where key messages start in publishing form
+        public int keymessagestartrow = 38;             //Row where key messages start in publishing form
         public int clickstreamstartrow = 4;             //Row where clickstream start in publishing form
         public int repstartrow = 1;             //Row where clickstream (and pres ids) start in report 
 
@@ -100,6 +100,7 @@ namespace ManageMetadata
             pubforms = new SortedDictionary<string, string>();
             previouspubforms = new SortedDictionary<string, string>();
             clickstreams = new SortedDictionary<string, string>();
+            pubforms = new SortedDictionary<string, string>();
         }
 
         //Confirm that Key Messages in current publishing forms are also contained in the Source Code Folders
@@ -126,7 +127,7 @@ namespace ManageMetadata
             //Get Presentation ID
             PresID = pubform.GetCellValueAsString(PresIDCell);
             //Vulnerability on EndRowIndex (AbbVie Care and Safety Profile for RA)//Think I fixed it - need to ensure worksheet is selected before making the Statistics call
-            for (int j = keymessagestartrow; j <= stats1.EndRowIndex; j++)
+            for (int j = keymessagestartrow; j <= stats1.EndRowIndex - 7; j++)
             {
                 string kmzip = pubform.GetCellValueAsString(KeyMessageCol + j);
                 if (kmzip.Contains(".zip"))
@@ -161,13 +162,12 @@ namespace ManageMetadata
         {
             //Extract clickstreams from publishing form
             SLDocument pubform = openPubForm(thisFolder + "\\" + filename);
-            string curSheet = pubform.GetCurrentWorksheetName();
             pubform.SelectWorksheet(PresTab); 
             string PresID = pubform.GetCellValueAsString(PresIDCell);
             SLWorksheetStatistics stats1 = pubform.GetWorksheetStatistics();
             Dictionary<string, string> keymessagenumberstonames = new Dictionary<string, string>();
             //Get Key Message Number to Name Mapping - no need to store Presentation id as disposable lookup dictionary on a per spreadsheet basis 
-            for (int j = keymessagestartrow; j <= stats1.EndRowIndex; j++)
+            for (int j = keymessagestartrow; j <= stats1.EndRowIndex - 7; j++)
             {
                 
                 string kmzip = pubform.GetCellValueAsString(KeyMessageCol + j);
@@ -178,13 +178,16 @@ namespace ManageMetadata
             stats1 = pubform.GetWorksheetStatistics();
             for (int j = clickstreamstartrow; j < stats1.EndRowIndex; j++)
             {
+                //Need to resolve the decimal issue (e.g. Pub Form has stored just 61 formatted to 61.00 while Clickstream Form has 61.00 stored actually as 61.00
                 string clickstream = pubform.GetCellValueAsString(pubclickstreamcolumn + j);               //Clickstream name
                 string clickstreamkey = pubform.GetCellValueAsString(pubclickstreamkeycolumn + j);         //Key Message Number
                 string clickstreamname = "";
                 bool hasValue = keymessagenumberstonames.TryGetValue(clickstreamkey, out clickstreamname);                                                                                           //Lookup Key Message Number using dictionary generated earlier
                 if (!hasValue) { }  //TODO: Handle the lack of a lookup?
-                    try { clickstreams.Add(PresID + "#" + clickstreamname + "@" + clickstream, clickstream);}                //Concatenated PresID, Key Name and Clicksteam so can still just use string dictionaries in case can refactor later to be same as key message
-                    catch (Exception e){if (e.HResult == -2147024809){}else{throw e;}}                  //Allow for duplicates
+                if (clickstream != "") { 
+                    try { clickstreams.Add(PresID + "#" + clickstreamname + "@" + clickstream, clickstream); }                //Concatenated PresID, Key Name and Clicksteam so can still just use string dictionaries in case can refactor later to be same as key message
+                    catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
+                }
             }
         }
         //TODO: Refactor these two functions into one - only difference is the dictionary being iterated
