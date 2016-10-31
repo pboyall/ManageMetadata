@@ -48,14 +48,32 @@ namespace ManageMetadata
             mm.initialise();
             mm.validateKeyMessages();
             //Populate Treeview
-            SortedDictionary<string, string> KeyMessages = mm.getPresentationsAndKeyMessages();
+            SortedDictionary<string, string> KeyMessages = mm.getPresentationsAndKeyMessages();     //KeyMessage, PresID
+            
             this.trvPresentations.BeginUpdate();
             this.trvPresentations.Nodes.Clear();
             //this.trvPresentations.Nodes.Add(mm.getProjectName());
-            
-            foreach (var v in  KeyMessages.Values.Distinct())
+            //Add Presentation Names
+
+            List<String> PresentationList = new List<String>();
+            PresentationList = KeyMessages.Values.Distinct().ToList();
+            PresentationList.Sort();
+
+            foreach (var v in PresentationList)
             {
                 this.trvPresentations.Nodes.Add(v.ToString(), v.ToString());
+            }
+            //For each presentation add the key messages
+            foreach( TreeNode node in trvPresentations.Nodes)
+            {
+                //Get Key messages for this presentation
+                var x = mm.getSortedKeyMessages(node.Text.ToString());
+                //var k = from item in KeyMessages where item.Value.ToString() == node.Text.ToString() select item.Key.ToString();
+                //foreach (var j in x)
+                //{node.Nodes.Add(j.ToString());}
+                                foreach (var j in x) {
+                                    node.Nodes.Add(j.Value.ToString());
+                                }
             }
             this.trvPresentations.EndUpdate();
         }
@@ -73,15 +91,16 @@ namespace ManageMetadata
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            mm.sourcePath = "e:\\Code\\ra_uk_2016_veeva";
-            mm.FolderPath = "e:\\ManageMetadataSource\\Publishing Forms";
-            mm.mappingfiles = "e:\\ManageMetadataSource\\Original Publishing Forms";
-            mm.clickstreamfile = "e:\\ManageMetadataSource\\Clickstreams\\ClickstreamReport.xlsx";
-            mm.presrepfile = "e:\\ManageMetadataSource\\Clickstreams\\PresentationReport.xlsx";
+            mm.sourcePath = "G:\\Code\\ra_uk_2016_veeva";
+            mm.FolderPath = "G:\\ManageMetadataSource\\Publishing Forms";
+            mm.mappingfiles = "G:\\ManageMetadataSource\\Original Publishing Forms";
+            mm.clickstreamfile = "G:\\ManageMetadataSource\\Clickstreams\\ClickstreamReport.xlsx";
+            mm.presrepfile = "G:\\ManageMetadataSource\\Clickstreams\\PresentationReport.xlsx";
         }
 
         private void btnValClickstreams_Click(object sender, EventArgs e)
         {
+            mm.initialise();
             mm.validateClickstreams();
         }
 
@@ -124,6 +143,7 @@ namespace ManageMetadata
 
         private void btnValidatePresentations_Click(object sender, EventArgs e)
         {
+            mm.initialise();
             mm.validatePresentations();
         }
 

@@ -20,6 +20,7 @@ namespace ManageMetadata
         public string KeyMessageCol = "K";              //Column containing zip file names in publishing form.  Do we need to validate Zip file names against the Key Message Name column too?
         public string pubclickstreamkeycolumn = "D";          //Column containing clickstream key message numbers in publishing form
         public string pubkeynumbercolumn = "C";          //Column containing presentation tab key message numbers in publishing form
+        public string pubdisplaynumbercolumn = "D";          //Column containing presentation tab display numbers in publishing form
         public string pubclickstreamcolumn = "A";          //Column containing clickstream names in publishing form
 
         public string clickstreamcolumn = "F";          //Column containing clickstream names in clickstream report
@@ -53,6 +54,8 @@ namespace ManageMetadata
         private SortedDictionary<string, string> pubforms;              //Filename, PresentationID     //Actual Publishing Forms
         private SortedDictionary<string, string> previouspubforms;     //Filename, PresentationID       //Previous Publishing Forms (used when doing mass rename)
         private SortedDictionary<string, string> clickstreams;           //clickstream, KeyMessage   
+        private SortedDictionary<string, SortedDictionary<int, string>> orderedKeymessages;           //  Pres ID, <DisplayOrder, KeymessageName>
+
         private string  pubfolder;     
         private string metafolder;
         private string ProjectName;
@@ -75,6 +78,21 @@ namespace ManageMetadata
         public SortedDictionary<string, string> getPresentationsAndKeyMessages() {
             return keymessages; 
         }
+
+
+        public SortedDictionary<int, string> getSortedKeyMessages(string PresName)
+        {
+            //var k = (from item in orderedKeymessages where item.Key == PresName orderby item.Key select item.Value);//.ToDictionary(pair=>pair.Key, pair=>pair.Value);
+            var k = (from item in orderedKeymessages where item.Key == PresName select item.Value);
+            //var results = k.ToDictionary(item => item);
+            //return k.OrderBy(i=>i.Keys);
+            //There should only be one 
+
+           return k.ElementAt(0);
+
+        }
+
+
         public string getProjectName()
         {
             //In the abence of any other method just grab the first one (later on be more clever and find the one that has no "_LO" on the end
@@ -101,6 +119,7 @@ namespace ManageMetadata
             previouspubforms = new SortedDictionary<string, string>();
             clickstreams = new SortedDictionary<string, string>();
             pubforms = new SortedDictionary<string, string>();
+            orderedKeymessages = new SortedDictionary<string, SortedDictionary<int, string>>();
         }
 
         //Confirm that Key Messages in current publishing forms are also contained in the Source Code Folders
@@ -114,12 +133,20 @@ namespace ManageMetadata
             CompareKeyMessages();
         }
 
+        public void getDisplayOrder(string PresID, string keyMessage)
+        {
+
+
+        }
+
         //TODO compare common code to ExtractClickstream and refactor
 
         private void ExtractKeyMessage(string filename, string thisFolder, bool current = true)
         {
             //Extract key messages from publishing form
+
             string PresID="";
+            SortedDictionary<int, string> thisPresKeyMessages = new SortedDictionary<int, string>();
             SLDocument pubform = new SLDocument(thisFolder + "\\" + filename);
             string curSheet = pubform.GetCurrentWorksheetName();
             if (curSheet != "") { pubform.SelectWorksheet(PresTab); }
@@ -130,12 +157,15 @@ namespace ManageMetadata
             for (int j = keymessagestartrow; j <= stats1.EndRowIndex - 7; j++)
             {
                 string kmzip = pubform.GetCellValueAsString(KeyMessageCol + j);
+                int DisplayOrder = pubform.GetCellValueAsInt32(pubdisplaynumbercolumn + j);
                 if (kmzip.Contains(".zip"))
                 {
                     try { 
-                        if (current) { 
+                        if (current) {
+                            thisPresKeyMessages.Add(DisplayOrder, kmzip.Replace(".zip", ""));           //Doing it this way round means that where a slide is duplicated we still get it in each presentation for the tree view
                             keymessages.Add(kmzip.Replace(".zip", ""), PresID);
-                        }else
+                        }
+                        else
                         {
                             oldkeymessages.Add(kmzip.Replace(".zip", ""), PresID);
                         }
@@ -145,7 +175,6 @@ namespace ManageMetadata
                         if(e.HResult == -2147024809)
                         {
                             //Ignore as duplicate keys can occur if same key message in more than one presentation
-
                         }else
                         {
                             //Re raise?
@@ -154,6 +183,11 @@ namespace ManageMetadata
                     }
                 }
             }
+            //Resort thisPresKeymessages into display order
+
+            thisPresKeyMessages.OrderBy(key => key.Key);
+
+            orderedKeymessages.Add(PresID, thisPresKeyMessages);
         }
 
         //TODO refactor as similar code to above
@@ -171,7 +205,8 @@ namespace ManageMetadata
             {
                 
                 string kmzip = pubform.GetCellValueAsString(KeyMessageCol + j);
-                string kmnumber = pubform.GetCellValueAsString(pubkeynumbercolumn + j);
+                string kmnumber =  pubform.GetCellValueAsString(pubkeynumbercolumn + j);
+                kmnumber = String.Format("{0:0.00}", kmnumber);
                 try { keymessagenumberstonames.Add(kmnumber, kmzip);  } catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
             }
             pubform.SelectWorksheet(ClickTab);
@@ -181,6 +216,7 @@ namespace ManageMetadata
                 //Need to resolve the decimal issue (e.g. Pub Form has stored just 61 formatted to 61.00 while Clickstream Form has 61.00 stored actually as 61.00
                 string clickstream = pubform.GetCellValueAsString(pubclickstreamcolumn + j);               //Clickstream name
                 string clickstreamkey = pubform.GetCellValueAsString(pubclickstreamkeycolumn + j);         //Key Message Number
+                clickstreamkey = String.Format("{0:0.00}", clickstreamkey);
                 string clickstreamname = "";
                 bool hasValue = keymessagenumberstonames.TryGetValue(clickstreamkey, out clickstreamname);                                                                                           //Lookup Key Message Number using dictionary generated earlier
                 if (!hasValue) { }  //TODO: Handle the lack of a lookup?
@@ -224,8 +260,6 @@ namespace ManageMetadata
             {
                 ExtractClickstream(f.Value, pubfolder);
             }
-
-
         }
 
         //List Source Code Folders
