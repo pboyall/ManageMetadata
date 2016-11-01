@@ -25,7 +25,7 @@ namespace ManageMetadata
 
         public string clickstreamcolumn = "F";          //Column containing clickstream names in clickstream report
         public string clickstreamkeycolumn = "D";          //Column containing clickstream key message names in clickstream report
-        public string prescolumn = "K";                 //Column containing presentation IDs in presentation report
+        public string prescolumn = "D";                 //Column containing presentation IDs in presentation report
 
         public string PresIDCell = "C22";
         public string PresTab = "Presentation-Slide metadata";
