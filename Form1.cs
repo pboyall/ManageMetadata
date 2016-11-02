@@ -71,11 +71,23 @@ namespace ManageMetadata
                 //var k = from item in KeyMessages where item.Value.ToString() == node.Text.ToString() select item.Key.ToString();
                 //foreach (var j in x)
                 //{node.Nodes.Add(j.ToString());}
-                                foreach (var j in x) {
-                                    node.Nodes.Add(j.Value.ToString());
-                                }
+                foreach (var j in x) {
+                    node.Nodes.Add(j.Value.ToString());
+                }
             }
             this.trvPresentations.EndUpdate();
+
+            this.trvSharedKeyMessages.BeginUpdate();
+            this.trvSharedKeyMessages.Nodes.Clear();
+            SortedDictionary<string, string> SharedKeyMessages = mm.getSharedKeyMessages();
+            foreach (var v in SharedKeyMessages.ToList())
+            {
+                TreeNode thisNode = this.trvSharedKeyMessages.Nodes.Add(v.Value.ToString());
+                thisNode.Nodes.Add(v.Key.ToString());
+            }
+
+            this.trvSharedKeyMessages.EndUpdate();
+
         }
 
         private void btnBrowseSource_Click(object sender, EventArgs e)
@@ -106,7 +118,10 @@ namespace ManageMetadata
 
         private void btnMakeSourceFolders_Click(object sender, EventArgs e)
         {
-            //Based on the publishing form, 
+            //Based on the publishing form, create all the source folders
+            mm.initialise();
+            mm.CreateFolders();
+
         }
 
         private void btnRenameZips_Click(object sender, EventArgs e)
@@ -159,6 +174,11 @@ namespace ManageMetadata
                 this.lblPresentations.Text = theDialog.FileName.ToString();
                 mm.presrepfile = this.lblPresentations.Text;
             }
+        }
+
+        private void btnExtractFromPDF_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -60,6 +60,8 @@
             this.lblPresentations = new System.Windows.Forms.Label();
             this.btnPresentationReport = new System.Windows.Forms.Button();
             this.lblPresReports = new System.Windows.Forms.Label();
+            this.trvSharedKeyMessages = new System.Windows.Forms.TreeView();
+            this.lblSharedKeys = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnMakeMetaFromPub
@@ -90,6 +92,7 @@
             this.btnExtractFromPDF.TabIndex = 2;
             this.btnExtractFromPDF.Text = "ExtractFromPDF";
             this.btnExtractFromPDF.UseVisualStyleBackColor = true;
+            this.btnExtractFromPDF.Click += new System.EventHandler(this.btnExtractFromPDF_Click);
             // 
             // btnValClickstreams
             // 
@@ -144,7 +147,7 @@
             treeNode4.Text = "HUM_ABV_LO";
             this.trvPresentations.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
             treeNode4});
-            this.trvPresentations.Size = new System.Drawing.Size(613, 369);
+            this.trvPresentations.Size = new System.Drawing.Size(716, 849);
             this.trvPresentations.TabIndex = 6;
             // 
             // btnBrowseSource
@@ -298,11 +301,29 @@
             this.lblPresReports.TabIndex = 20;
             this.lblPresReports.Text = "Pres Report";
             // 
+            // trvSharedKeyMessages
+            // 
+            this.trvSharedKeyMessages.Location = new System.Drawing.Point(25, 425);
+            this.trvSharedKeyMessages.Name = "trvSharedKeyMessages";
+            this.trvSharedKeyMessages.Size = new System.Drawing.Size(520, 432);
+            this.trvSharedKeyMessages.TabIndex = 23;
+            // 
+            // lblSharedKeys
+            // 
+            this.lblSharedKeys.AutoSize = true;
+            this.lblSharedKeys.Location = new System.Drawing.Point(25, 406);
+            this.lblSharedKeys.Name = "lblSharedKeys";
+            this.lblSharedKeys.Size = new System.Drawing.Size(239, 13);
+            this.lblSharedKeys.TabIndex = 24;
+            this.lblSharedKeys.Text = "Shared Key Messages Found in Publishing Forms";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1176, 389);
+            this.ClientSize = new System.Drawing.Size(1279, 869);
+            this.Controls.Add(this.lblSharedKeys);
+            this.Controls.Add(this.trvSharedKeyMessages);
             this.Controls.Add(this.lblPresentations);
             this.Controls.Add(this.btnPresentationReport);
             this.Controls.Add(this.lblPresReports);
@@ -362,6 +383,8 @@
         private System.Windows.Forms.Label lblPresentations;
         private System.Windows.Forms.Button btnPresentationReport;
         private System.Windows.Forms.Label lblPresReports;
+        private System.Windows.Forms.TreeView trvSharedKeyMessages;
+        private System.Windows.Forms.Label lblSharedKeys;
     }
 }
 

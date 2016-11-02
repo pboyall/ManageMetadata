@@ -15,6 +15,8 @@ namespace ManageMetadata
 {
     class clsManageMetadata
     {
+
+        #region Public Variables
         //Config constants (move to config file later)
 
         public string KeyMessageCol = "K";              //Column containing zip file names in publishing form.  Do we need to validate Zip file names against the Key Message Name column too?
@@ -22,25 +24,31 @@ namespace ManageMetadata
         public string pubkeynumbercolumn = "C";          //Column containing presentation tab key message numbers in publishing form
         public string pubdisplaynumbercolumn = "D";          //Column containing presentation tab display numbers in publishing form
         public string pubclickstreamcolumn = "A";          //Column containing clickstream names in publishing form
+        public string pubsharedcolumn = "B";          //Column containing shared key message names in publishing form
 
         public string clickstreamcolumn = "F";          //Column containing clickstream names in clickstream report
         public string clickstreamkeycolumn = "D";          //Column containing clickstream key message names in clickstream report
         public string prescolumn = "D";                 //Column containing presentation IDs in presentation report
 
         public string PresIDCell = "C22";
-        public string PresTab = "Presentation-Slide metadata";
-        public string ClickTab = "clickstream data";         
+
         public int keymessagestartrow = 38;             //Row where key messages start in publishing form
         public int clickstreamstartrow = 4;             //Row where clickstream start in publishing form
         public int repstartrow = 1;             //Row where clickstream (and pres ids) start in report 
+        public int SharedOffset = 5;            //Gap from Shared Message row header to row containing file name
+
+        public string PresTab = "Presentation-Slide metadata";
+        public string ClickTab = "clickstream data";
 
         public string logfile = "ValidationErrors.log";
         public string pubPath = "";                 //Folder containing publishing forms - PUB_FORM
         public string metaPath = "METADATA";                //Folder containing metadata forms
+        public string sourcecreatePath = "SOURCE";                //Folder containing source code (for creating)
+        public string prescreatePath = "SOURCE_CODE";                //Folder containing presentation source code (for distribution)
         public string mappingfiles = "";                    //Folder containing original publishing forms (pre renaming of key messages)
         public int[] NonMetadataColumns = { 1, 9, 11 };     //Index of columns which do not appear in metadata sheet but do appear in publishing form
         public bool recusePubFolders = false;               //Whether or not to recurse folders in the publising forms
-        public string sourcePath;           //Contains code
+        public string sourcePath;                           //Contains code (for reading)
         public string clickstreamfile;                      //Report containing Clickstream data for validation
         public string presrepfile;                      //Report containing Presentation Details for validation
 
@@ -56,9 +64,14 @@ namespace ManageMetadata
         private SortedDictionary<string, string> clickstreams;           //clickstream, KeyMessage   
         private SortedDictionary<string, SortedDictionary<int, string>> orderedKeymessages;           //  Pres ID, <DisplayOrder, KeymessageName>
 
+        private SortedDictionary<string, string> sharedkeymessages;           //KeyMessage, PresID    //Should just be one
+
         private string  pubfolder;     
         private string metafolder;
+        private string sourcefolder;
         private string ProjectName;
+
+        #endregion Public Variables
 
         public string FolderPath
         {
@@ -79,6 +92,11 @@ namespace ManageMetadata
             return keymessages; 
         }
 
+        public SortedDictionary<string, string> getSharedKeyMessages()
+        {
+            return sharedkeymessages;
+        }
+
 
         public SortedDictionary<int, string> getSortedKeyMessages(string PresName)
         {
@@ -87,18 +105,14 @@ namespace ManageMetadata
             //var results = k.ToDictionary(item => item);
             //return k.OrderBy(i=>i.Keys);
             //There should only be one 
-
            return k.ElementAt(0);
-
         }
-
 
         public string getProjectName()
         {
             //In the abence of any other method just grab the first one (later on be more clever and find the one that has no "_LO" on the end
             return keymessages.Keys.First<string>();
         }
-
 
         public clsManageMetadata()
         {
@@ -120,6 +134,26 @@ namespace ManageMetadata
             clickstreams = new SortedDictionary<string, string>();
             pubforms = new SortedDictionary<string, string>();
             orderedKeymessages = new SortedDictionary<string, SortedDictionary<int, string>>();
+            sharedkeymessages = new SortedDictionary<string, string>();
+        }
+
+        public void CreateFolders()
+        {
+            //Populate the Dictionaries
+            ExtractKeyMessages(pubfolder);
+            //For each Presentation create a zip file folder (for the presentation itself) 
+            var v = orderedKeymessages.Keys.ToList();
+            foreach (var w in v)
+            {
+                System.IO.Directory.CreateDirectory(folderPath + "\\" + prescreatePath + "\\" + w.ToString());
+            }
+
+            //For each Key message, create a folder
+            v = keymessages.Keys.ToList();
+            foreach(var w in v) { 
+                System.IO.Directory.CreateDirectory(folderPath + "\\" + sourcecreatePath+ "\\" + w.ToString());
+            }
+
         }
 
         //Confirm that Key Messages in current publishing forms are also contained in the Source Code Folders
@@ -131,12 +165,47 @@ namespace ManageMetadata
             ExtractKeyMessages(pubfolder);
             //Compare the spreadsheet names with the source names
             CompareKeyMessages();
+            //TODO: Need to compare shared asset folder name too
+            CompareSharedAsset();
         }
 
-        public void getDisplayOrder(string PresID, string keyMessage)
+        private void CompareSharedAsset()
         {
+            SortedDictionary<string, string> missingsharedfolder = new SortedDictionary<string, string>();
+            HashSet<string> lines = new HashSet<string>();
+            lines.Add("Shared Assets Missing from Veeva:");
+            string[] headermessage = new string[] { "Shared Folders found in Veeva but not found in publishing forms" };
 
-
+            //Query Folder Names for any with "SHARED" in the name
+            //Not needed as done already as part of key message listing ListFolderNames();
+            //Above poulates sourcefolders dictionary with *all* key message folders, so filter to just the shared ones
+            var sharedfolder = from source in sourcefolders where source.Key.ToString().ToUpper().Contains("SHARED") select source;
+            var shares = sharedfolder.ToDictionary(p=>p.Key, p=>p.Value);
+            //Check sharedfolder against the Shared Folder Name row of the Publishing Form (sharedkeymessages dictionary)
+            //for each key message in the publishing forms see if it exists in the disk
+            foreach (var v in sharedkeymessages)
+            {
+                //Check if the publishing form tallies with the sharedfolder found on disk
+                if (shares.ContainsKey(v.Value))
+                {
+                    shares[v.Key] = true;
+                }
+                else
+                {
+                    missingsharedfolder.Add(v.Key, v.Value);        //Turn around so get a report for each presentation with an issue
+                }
+            }
+            //Also identify if there are shared folders on disk not in publishing forms
+            if (shares.ContainsValue(false))
+            {
+                var matches = shares.Where(pair => pair.Value != true).Select(pair => pair.Key);
+                System.IO.File.WriteAllLines(folderPath + "\\SharedKeys" + logfile, headermessage);
+                System.IO.File.AppendAllLines(folderPath + "\\SharedKeys" + logfile, matches.ToArray<string>());
+            }
+            //And write out the results of identifing if any shared keys in the spreadsheets lack a corresponding folder
+            foreach (var v in missingsharedfolder)
+            {lines.Add(v.Key + " - " + v.Value);}
+            System.IO.File.AppendAllLines(folderPath + "\\SharedKeys" + logfile, lines.ToArray<string>());
         }
 
         //TODO compare common code to ExtractClickstream and refactor
@@ -154,41 +223,51 @@ namespace ManageMetadata
             //Get Presentation ID
             PresID = pubform.GetCellValueAsString(PresIDCell);
             //Vulnerability on EndRowIndex (AbbVie Care and Safety Profile for RA)//Think I fixed it - need to ensure worksheet is selected before making the Statistics call
-            for (int j = keymessagestartrow; j <= stats1.EndRowIndex - 7; j++)
+            for (int j = keymessagestartrow; j <= stats1.EndRowIndex; j++)
             {
                 string kmzip = pubform.GetCellValueAsString(KeyMessageCol + j);
                 int DisplayOrder = pubform.GetCellValueAsInt32(pubdisplaynumbercolumn + j);
                 if (kmzip.Contains(".zip"))
                 {
-                    try { 
-                        if (current) {
+                    try
+                    {
+                        if (current)
+                        {
                             thisPresKeyMessages.Add(DisplayOrder, kmzip.Replace(".zip", ""));           //Doing it this way round means that where a slide is duplicated we still get it in each presentation for the tree view
                             keymessages.Add(kmzip.Replace(".zip", ""), PresID);
                         }
-                        else
-                        {
-                            oldkeymessages.Add(kmzip.Replace(".zip", ""), PresID);
-                        }
+                        else{oldkeymessages.Add(kmzip.Replace(".zip", ""), PresID);}
                     }
-                    catch(Exception e)
-                    {
-                        if(e.HResult == -2147024809)
-                        {
+                    catch (Exception e)
+                    {if (e.HResult == -2147024809){
                             //Ignore as duplicate keys can occur if same key message in more than one presentation
-                        }else
-                        {
-                            //Re raise?
-                            throw e;
-                        }
+                        }else{throw e;}
                     }
                 }
+                else
+                {//May be shared message row
+                    try {
+                        var skm = pubform.GetCellValueAsString(pubsharedcolumn + j);
+                        if (skm.Contains(".zip")) { 
+                            sharedkeymessages.Add(PresID, skm);         //We can do this by Presentation rather than by key message
+                        }else
+                        {//Trying to cater for other eventualities
+                            if (pubform.GetCellValueAsString(pubsharedcolumn + (j - 1)).Contains("Shared Resources\nFile Name")) {
+                                sharedkeymessages.Add(PresID, skm);
+                            }
+                        }
+                        }catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }
+                }
+
             }
-            //Resort thisPresKeymessages into display order
 
-            thisPresKeyMessages.OrderBy(key => key.Key);
+            
+                //Resort thisPresKeymessages into display order
 
-            orderedKeymessages.Add(PresID, thisPresKeyMessages);
-        }
+                thisPresKeyMessages.OrderBy(key => key.Key);
+
+                orderedKeymessages.Add(PresID, thisPresKeyMessages);
+            }
 
         //TODO refactor as similar code to above
         //Extract Clickstream details from publishing form
@@ -201,7 +280,7 @@ namespace ManageMetadata
             SLWorksheetStatistics stats1 = pubform.GetWorksheetStatistics();
             Dictionary<string, string> keymessagenumberstonames = new Dictionary<string, string>();
             //Get Key Message Number to Name Mapping - no need to store Presentation id as disposable lookup dictionary on a per spreadsheet basis 
-            for (int j = keymessagestartrow; j <= stats1.EndRowIndex - 7; j++)
+            for (int j = keymessagestartrow; j <= stats1.EndRowIndex; j++)
             {
                 
                 string kmzip = pubform.GetCellValueAsString(KeyMessageCol + j);
@@ -502,7 +581,7 @@ namespace ManageMetadata
                 System.IO.File.AppendAllLines(folderPath + "\\Clickstream" + logfile, matches.ToArray<string>());
             }
 
-            //Also need to identify if any messages in the spreadsheets lack a corresponding folder
+            //And write out the results of identifing if any messages in the spreadsheets lack a corresponding folder
             foreach (var v in missingstreams)
             {
                 Console.WriteLine(v.Key);
@@ -535,7 +614,6 @@ namespace ManageMetadata
                 catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
             }
 
-
             //Then verify against the Presentation IDs in Veeva  (and those coded into "GotoSlide" in the pages?  No, rely on manual checks for that for now)
             //Use publishing report
             //Open Excel Clickstream Report File and extract list of clickstreamids
@@ -549,8 +627,6 @@ namespace ManageMetadata
             }
 
             //Now Compare
-
-            
             HashSet<string> lines = new HashSet<string>();
             lines.Add("Presentation IDs Missing from Publishing Forms :");
             string[] headermessage = new string[] { "Presentations found in Publising Form but not found in Veeva" };
