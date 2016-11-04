@@ -67,7 +67,6 @@ namespace ManageMetadata
 
         public bool recusePubFolders = false;               //Whether or not to recurse folders in the publising forms
 
-
 #endregion Public Variables
 
         private string folderPath;           //Top path which contains publishign forms and metadata.
@@ -85,8 +84,6 @@ namespace ManageMetadata
 
         private string  pubfolder;     
         private string metafolder;
-
-
 
         public string FolderPath
         {
@@ -111,7 +108,6 @@ namespace ManageMetadata
         {
             return sharedkeymessages;
         }
-
 
         public SortedDictionary<int, string> getSortedKeyMessages(string PresName)
         {
