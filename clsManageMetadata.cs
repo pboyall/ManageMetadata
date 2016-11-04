@@ -16,9 +16,10 @@ namespace ManageMetadata
     class clsManageMetadata
     {
 
-        #region Public Variables
+#region Public Variables
         //Config constants (move to config file later)
 
+        #region Publishing Form Constants
         public string KeyMessageCol = "K";              //Column containing zip file names in publishing form.  Do we need to validate Zip file names against the Key Message Name column too?
         public string pubclickstreamkeycolumn = "D";          //Column containing clickstream key message numbers in publishing form
         public string pubkeynumbercolumn = "C";          //Column containing presentation tab key message numbers in publishing form
@@ -26,12 +27,7 @@ namespace ManageMetadata
         public string pubclickstreamcolumn = "A";          //Column containing clickstream names in publishing form
         public string pubsharedcolumn = "B";          //Column containing shared key message names in publishing form
 
-        public string clickstreamcolumn = "F";          //Column containing clickstream names in clickstream report
-        public string clickstreamkeycolumn = "D";          //Column containing clickstream key message names in clickstream report
-        public string prescolumn = "D";                 //Column containing presentation IDs in presentation report
-
         public string PresIDCell = "C22";
-
         public int keymessagestartrow = 38;             //Row where key messages start in publishing form
         public int clickstreamstartrow = 4;             //Row where clickstream start in publishing form
         public int repstartrow = 1;             //Row where clickstream (and pres ids) start in report 
@@ -39,21 +35,42 @@ namespace ManageMetadata
 
         public string PresTab = "Presentation-Slide metadata";
         public string ClickTab = "clickstream data";
+        #endregion Publishing Form Constants
 
+        #region Report Sheet Constants
+        public string clickstreamcolumn = "F";          //Column containing clickstream names in clickstream report
+        public string clickstreamkeycolumn = "D";          //Column containing clickstream key message names in clickstream report
+        public string clickstreamprescolumn = "K";                 //Column containing presentation IDs in presentation report
+
+        public string veevaprescolumn = "F";          //Column containing presentation IDs in veeva report
+        public string veevakeycolumn = "D";          //Column containing clickstream key message names in veeva report
+        public string veevasharedcolumn = "K";       //Column containing shared key message values in veeva report          
+
+        public string prescolumn = "D";                 //Column containing presentation IDs in presentation report
+
+        #endregion Report Sheet Constants
+
+        #region Paths 
         public string logfile = "ValidationErrors.log";
         public string pubPath = "";                 //Folder containing publishing forms - PUB_FORM
         public string metaPath = "METADATA";                //Folder containing metadata forms
         public string sourcecreatePath = "SOURCE";                //Folder containing source code (for creating)
         public string prescreatePath = "SOURCE_CODE";                //Folder containing presentation source code (for distribution)
         public string mappingfiles = "";                    //Folder containing original publishing forms (pre renaming of key messages)
-        public int[] NonMetadataColumns = { 1, 9, 11 };     //Index of columns which do not appear in metadata sheet but do appear in publishing form
-        public bool recusePubFolders = false;               //Whether or not to recurse folders in the publising forms
         public string sourcePath;                           //Contains code (for reading)
         public string clickstreamfile;                      //Report containing Clickstream data for validation
         public string presrepfile;                      //Report containing Presentation Details for validation
 
+        #endregion Paths 
+
+        public int[] NonMetadataColumns = { 1, 9, 11 };     //Index of columns which do not appear in metadata sheet but do appear in publishing form
+
+        public bool recusePubFolders = false;               //Whether or not to recurse folders in the publising forms
+
+
+#endregion Public Variables
+
         private string folderPath;           //Top path which contains publishign forms and metadata.
-        
         //Don't really need full dictionary but gives some future proofing
         private SortedDictionary<string, string> keymessages;           //KeyMessage, PresID    //Zip file names, for now
         private SortedDictionary<string, string> oldkeymessages;        //KeyMessage, PresID    //Previous Zip file names, for now
@@ -68,10 +85,8 @@ namespace ManageMetadata
 
         private string  pubfolder;     
         private string metafolder;
-        private string sourcefolder;
-        private string ProjectName;
 
-        #endregion Public Variables
+
 
         public string FolderPath
         {
@@ -174,11 +189,13 @@ namespace ManageMetadata
             SortedDictionary<string, string> missingsharedfolder = new SortedDictionary<string, string>();
             HashSet<string> lines = new HashSet<string>();
             lines.Add("Shared Assets Missing from Veeva:");
-            string[] headermessage = new string[] { "Shared Folders found in Veeva but not found in publishing forms" };
+            string[] headermessage = new string[] { "Shared Folders found on disk but not found in publishing forms" };
+            string[] sucessheadermessage = new string[] { "", "***Shared Folders matched from disk to publishing forms***", "" };
+            string[] veevaheadermessage = new string[] { "", "Shared Folders found on disk but not found in publishing forms", "" };
 
             //Query Folder Names for any with "SHARED" in the name
-            //Not needed as done already as part of key message listing ListFolderNames();
-            //Above poulates sourcefolders dictionary with *all* key message folders, so filter to just the shared ones
+            //ListFolderNames() call not needed as done already as part of key message listing 
+            //ListFolderNames() populates sourcefolders dictionary with *all* key message folders, so filter to just the shared ones
             var sharedfolder = from source in sourcefolders where source.Key.ToString().ToUpper().Contains("SHARED") select source;
             var shares = sharedfolder.ToDictionary(p=>p.Key, p=>p.Value);
             //Check sharedfolder against the Shared Folder Name row of the Publishing Form (sharedkeymessages dictionary)
@@ -206,6 +223,17 @@ namespace ManageMetadata
             foreach (var v in missingsharedfolder)
             {lines.Add(v.Key + " - " + v.Value);}
             System.IO.File.AppendAllLines(folderPath + "\\SharedKeys" + logfile, lines.ToArray<string>());
+
+            //Write out ones that are okay
+            if (shares.ContainsValue(true))
+            {
+                var matches = shares.Where(pair => pair.Value != true).Select(pair => pair.Key);
+                System.IO.File.WriteAllLines(folderPath + "\\SharedKeys" + logfile, headermessage);
+                System.IO.File.AppendAllLines(folderPath + "\\SharedKeys" + logfile, matches.ToArray<string>());
+            }
+
+
+
         }
 
         //TODO compare common code to ExtractClickstream and refactor
@@ -258,14 +286,9 @@ namespace ManageMetadata
                         }
                         }catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }
                 }
-
             }
-
-            
                 //Resort thisPresKeymessages into display order
-
                 thisPresKeyMessages.OrderBy(key => key.Key);
-
                 orderedKeymessages.Add(PresID, thisPresKeyMessages);
             }
 
@@ -408,6 +431,7 @@ namespace ManageMetadata
             HashSet<string> lines = new HashSet<string>() ;
             lines.Add("Key Messages Missing from folders:");
             string[] headermessage = new string[] { "Key Messages found in folders but not found in spreadsheet"};
+            string[] successheadermessage = new string[] { "", "***Key Messages matched between publishing forms and folders***", "" };
             //Validate names in publishing form match folders
             //Don't use a clever (big O) comparison as may not be a perfect match
             foreach (var v in keymessages)
@@ -441,6 +465,18 @@ namespace ManageMetadata
                 lines.Add(v.Key);
             }
             System.IO.File.AppendAllLines(folderPath + "\\" + logfile, lines.ToArray<string>());
+
+//Write out successfully matched ones
+
+            if (sourcefolders.ContainsValue(false))
+            {
+                var matches = sourcefolders.Where(pair => pair.Value == true).Select(pair => pair.Key);
+                Console.Write(matches.ToString());
+                System.IO.File.WriteAllLines(folderPath + "\\" + logfile, successheadermessage);
+                System.IO.File.AppendAllLines(folderPath + "\\" + logfile, matches.ToArray<string>());
+            }
+
+
 
 
         }
@@ -538,7 +574,7 @@ namespace ManageMetadata
             {
                 string clickstream = repform.GetCellValueAsString(clickstreamcolumn + j);               //Clickstream name
                 string clickstreamkey = repform.GetCellValueAsString(clickstreamkeycolumn + j);         //Key Message Name
-                string presid = repform.GetCellValueAsString(prescolumn + j);                           //Presentation ID
+                string presid = repform.GetCellValueAsString(clickstreamprescolumn + j);                           //Presentation ID
                 try { reportclickstreams.Add(presid + "#" + clickstreamkey + "@" + clickstream, false); }                //Concatenated PresID, Key and Clicksteam so can still just use string dictionaries in case can refactor later to be same as key message
                 catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
             }
@@ -556,6 +592,7 @@ namespace ManageMetadata
             HashSet<string> lines = new HashSet<string>();
             lines.Add("Clickstreams Missing from Veeva:");
             string[] headermessage = new string[] { "Clickstreams found in Veeva but not found in publishing forms" };
+            string[] successheadermessage = new string[] { "", "***Clickstreams Matched***", "" };
             //Validate names in publishing form match folders
             //Don't use a clever (big O) comparison as may not be a perfect match
             foreach (var v in clickstreams)
@@ -589,6 +626,14 @@ namespace ManageMetadata
             }
             System.IO.File.AppendAllLines(folderPath + "\\Clickstream" + logfile, lines.ToArray<string>());
 
+            //I think it is also worth writing out the clickstreams that sucessfully matched
+            if (reportclickstreams.ContainsValue(true))
+            {
+                var matches = reportclickstreams.Where(pair => pair.Value == true).Select(pair => pair.Key);
+                Console.Write(matches.ToString());
+                System.IO.File.WriteAllLines(folderPath + "\\Clickstream" + logfile, successheadermessage);
+                System.IO.File.AppendAllLines(folderPath + "\\Clickstream" + logfile, matches.ToArray<string>());
+            }
 
 
 
