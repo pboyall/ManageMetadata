@@ -33,7 +33,7 @@ namespace ManageMetadata
         public int repstartrow = 1;             //Row where clickstream (and pres ids) start in report 
         public int SharedOffset = 5;            //Gap from Shared Message row header to row containing file name
 
-        public string PresTab = "Presentation-Slide metadata";
+        public string PresTab = "Publishing Objects"; //"Presentation-Slide metadata";
         public string ClickTab = "clickstream data";
         #endregion Publishing Form Constants
 

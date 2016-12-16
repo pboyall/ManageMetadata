@@ -103,7 +103,7 @@ namespace ManageMetadata
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            mm.sourcePath = "G:\\Code\\ra_uk_2016_veeva";
+            mm.sourcePath = "G:\\Code\\axial_spa";
             mm.FolderPath = "G:\\ManageMetadataSource\\Publishing Forms";
             mm.mappingfiles = "G:\\ManageMetadataSource\\Original Publishing Forms";
             mm.clickstreamfile = "G:\\ManageMetadataSource\\Clickstreams\\ClickstreamReport.xlsx";
