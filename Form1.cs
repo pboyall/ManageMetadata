@@ -40,6 +40,7 @@ namespace ManageMetadata
             {
                 mm.FolderPath = folderBrowserDialog1.SelectedPath;
                 lblFolder.Text = mm.FolderPath;
+                txtMetadata.Text = mm.FolderPath;
             }
         }
 
@@ -98,8 +99,11 @@ namespace ManageMetadata
             {
                 mm.sourcePath= folderBrowserDialog1.SelectedPath;
                 lblSource.Text = mm.sourcePath;
+                txtSource.Text = mm.sourcePath;
             }
         }
+
+
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -138,6 +142,7 @@ namespace ManageMetadata
             {
                 mm.mappingfiles = folderBrowserDialog1.SelectedPath;
                 lblMapping.Text = mm.mappingfiles;
+                txtPrevMetadata.Text = mm.mappingfiles;
             }
         }
 
@@ -152,6 +157,7 @@ namespace ManageMetadata
             {
                 this.lblClickstream.Text = theDialog.FileName.ToString();
                 mm.clickstreamfile = this.lblClickstream.Text;
+                txtClickstream.Text = mm.clickstreamfile;
             }
 
         }
@@ -173,11 +179,72 @@ namespace ManageMetadata
             {
                 this.lblPresentations.Text = theDialog.FileName.ToString();
                 mm.presrepfile = this.lblPresentations.Text;
+                txtPresentation.Text = mm.presrepfile;
             }
         }
 
         private void btnExtractFromPDF_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void btnSpA_Click(object sender, EventArgs e)
+        {
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\SpA";
+            txtSource.Text = "g:\\code\\axial_spa";
+            txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\SpA\\ClickstreamReport.xlsx";
+            txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\SpA\\PresentationReport.xlsx";
+        }
+
+        private void txtMetadata_TextChanged(object sender, EventArgs e)
+        {
+            mm.FolderPath = txtMetadata.Text;
+        }
+
+        private void txtSource_TextChanged(object sender, EventArgs e)
+        {
+            mm.sourcePath = txtSource.Text;
+        }
+
+        private void txtPrevMetadata_TextChanged(object sender, EventArgs e)
+        {
+            mm.mappingfiles = txtPrevMetadata.Text;
+        }
+
+        private void txtClickstream_TextChanged(object sender, EventArgs e)
+        {
+            mm.clickstreamfile = txtClickstream.Text;
+        }
+
+        private void txtPresentation_TextChanged(object sender, EventArgs e)
+        {
+            mm.presrepfile = txtPresentation.Text;
+        }
+
+        private void btnPSA_Click(object sender, EventArgs e)
+        {
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\PSA";
+            txtSource.Text = "g:\\code\\psa_uk_2016_veeva";
+            txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\PSA\\ClickstreamReport.xlsx";
+            txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\PSA\\PresentationReport.xlsx";
+
+        }
+
+        private void btnUVE_Click(object sender, EventArgs e)
+        {
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\UVE";
+            txtSource.Text = "g:\\code\\uveitis_uk_2016_veeva";
+            txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\UVE\\ClickstreamReport.xlsx";
+            txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\UVE\\PresentationReport.xlsx";
+
+        }
+
+        private void btnUVSpa_Click(object sender, EventArgs e)
+        {
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\UVESpA";
+            txtSource.Text = "g:\\code\\uveitis_into_spa_uk_2016_veeva";
+            txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\UVESPA\\ClickstreamReport.xlsx";
+            txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\UVESPA\\PresentationReport.xlsx";
 
         }
     }

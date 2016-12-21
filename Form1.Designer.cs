@@ -62,6 +62,15 @@
             this.lblPresReports = new System.Windows.Forms.Label();
             this.trvSharedKeyMessages = new System.Windows.Forms.TreeView();
             this.lblSharedKeys = new System.Windows.Forms.Label();
+            this.btnSpA = new System.Windows.Forms.Button();
+            this.btnPSA = new System.Windows.Forms.Button();
+            this.btnUVE = new System.Windows.Forms.Button();
+            this.txtMetadata = new System.Windows.Forms.TextBox();
+            this.txtSource = new System.Windows.Forms.TextBox();
+            this.txtPrevMetadata = new System.Windows.Forms.TextBox();
+            this.txtPresentation = new System.Windows.Forms.TextBox();
+            this.txtClickstream = new System.Windows.Forms.TextBox();
+            this.btnUVSpa = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnMakeMetaFromPub
@@ -135,7 +144,7 @@
             // 
             // trvPresentations
             // 
-            this.trvPresentations.Location = new System.Drawing.Point(551, 8);
+            this.trvPresentations.Location = new System.Drawing.Point(935, 3);
             this.trvPresentations.Name = "trvPresentations";
             treeNode1.Name = "80.123.KeyMessage1";
             treeNode1.Text = "80.123.KeyMessage1";
@@ -317,11 +326,100 @@
             this.lblSharedKeys.TabIndex = 24;
             this.lblSharedKeys.Text = "Shared Key Messages Found in Publishing Forms";
             // 
+            // btnSpA
+            // 
+            this.btnSpA.Location = new System.Drawing.Point(15, 160);
+            this.btnSpA.Name = "btnSpA";
+            this.btnSpA.Size = new System.Drawing.Size(75, 23);
+            this.btnSpA.TabIndex = 25;
+            this.btnSpA.Text = "SpA";
+            this.btnSpA.UseVisualStyleBackColor = true;
+            this.btnSpA.Click += new System.EventHandler(this.btnSpA_Click);
+            // 
+            // btnPSA
+            // 
+            this.btnPSA.Location = new System.Drawing.Point(96, 160);
+            this.btnPSA.Name = "btnPSA";
+            this.btnPSA.Size = new System.Drawing.Size(75, 23);
+            this.btnPSA.TabIndex = 26;
+            this.btnPSA.Text = "PSA";
+            this.btnPSA.UseVisualStyleBackColor = true;
+            this.btnPSA.Click += new System.EventHandler(this.btnPSA_Click);
+            // 
+            // btnUVE
+            // 
+            this.btnUVE.Location = new System.Drawing.Point(177, 160);
+            this.btnUVE.Name = "btnUVE";
+            this.btnUVE.Size = new System.Drawing.Size(75, 23);
+            this.btnUVE.TabIndex = 27;
+            this.btnUVE.Text = "Uveitis";
+            this.btnUVE.UseVisualStyleBackColor = true;
+            this.btnUVE.Click += new System.EventHandler(this.btnUVE_Click);
+            // 
+            // txtMetadata
+            // 
+            this.txtMetadata.Location = new System.Drawing.Point(293, 6);
+            this.txtMetadata.Name = "txtMetadata";
+            this.txtMetadata.Size = new System.Drawing.Size(636, 20);
+            this.txtMetadata.TabIndex = 28;
+            this.txtMetadata.TextChanged += new System.EventHandler(this.txtMetadata_TextChanged);
+            // 
+            // txtSource
+            // 
+            this.txtSource.Location = new System.Drawing.Point(293, 32);
+            this.txtSource.Name = "txtSource";
+            this.txtSource.Size = new System.Drawing.Size(636, 20);
+            this.txtSource.TabIndex = 29;
+            this.txtSource.TextChanged += new System.EventHandler(this.txtSource_TextChanged);
+            // 
+            // txtPrevMetadata
+            // 
+            this.txtPrevMetadata.Location = new System.Drawing.Point(293, 56);
+            this.txtPrevMetadata.Name = "txtPrevMetadata";
+            this.txtPrevMetadata.Size = new System.Drawing.Size(636, 20);
+            this.txtPrevMetadata.TabIndex = 30;
+            this.txtPrevMetadata.TextChanged += new System.EventHandler(this.txtPrevMetadata_TextChanged);
+            // 
+            // txtPresentation
+            // 
+            this.txtPresentation.Location = new System.Drawing.Point(294, 114);
+            this.txtPresentation.Name = "txtPresentation";
+            this.txtPresentation.Size = new System.Drawing.Size(636, 20);
+            this.txtPresentation.TabIndex = 32;
+            this.txtPresentation.TextChanged += new System.EventHandler(this.txtPresentation_TextChanged);
+            // 
+            // txtClickstream
+            // 
+            this.txtClickstream.Location = new System.Drawing.Point(294, 90);
+            this.txtClickstream.Name = "txtClickstream";
+            this.txtClickstream.Size = new System.Drawing.Size(636, 20);
+            this.txtClickstream.TabIndex = 31;
+            this.txtClickstream.TextChanged += new System.EventHandler(this.txtClickstream_TextChanged);
+            // 
+            // btnUVSpa
+            // 
+            this.btnUVSpa.Location = new System.Drawing.Point(258, 160);
+            this.btnUVSpa.Name = "btnUVSpa";
+            this.btnUVSpa.Size = new System.Drawing.Size(75, 23);
+            this.btnUVSpa.TabIndex = 33;
+            this.btnUVSpa.Text = "UVE in Spa";
+            this.btnUVSpa.UseVisualStyleBackColor = true;
+            this.btnUVSpa.Click += new System.EventHandler(this.btnUVSpa_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1279, 869);
+            this.ClientSize = new System.Drawing.Size(1835, 869);
+            this.Controls.Add(this.btnUVSpa);
+            this.Controls.Add(this.txtPresentation);
+            this.Controls.Add(this.txtClickstream);
+            this.Controls.Add(this.txtPrevMetadata);
+            this.Controls.Add(this.txtSource);
+            this.Controls.Add(this.txtMetadata);
+            this.Controls.Add(this.btnUVE);
+            this.Controls.Add(this.btnPSA);
+            this.Controls.Add(this.btnSpA);
             this.Controls.Add(this.lblSharedKeys);
             this.Controls.Add(this.trvSharedKeyMessages);
             this.Controls.Add(this.lblPresentations);
@@ -385,6 +483,15 @@
         private System.Windows.Forms.Label lblPresReports;
         private System.Windows.Forms.TreeView trvSharedKeyMessages;
         private System.Windows.Forms.Label lblSharedKeys;
+        private System.Windows.Forms.Button btnSpA;
+        private System.Windows.Forms.Button btnPSA;
+        private System.Windows.Forms.Button btnUVE;
+        private System.Windows.Forms.TextBox txtMetadata;
+        private System.Windows.Forms.TextBox txtSource;
+        private System.Windows.Forms.TextBox txtPrevMetadata;
+        private System.Windows.Forms.TextBox txtPresentation;
+        private System.Windows.Forms.TextBox txtClickstream;
+        private System.Windows.Forms.Button btnUVSpa;
     }
 }
 

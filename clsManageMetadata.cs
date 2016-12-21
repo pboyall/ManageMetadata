@@ -38,13 +38,15 @@ namespace ManageMetadata
         #endregion Publishing Form Constants
 
         #region Report Sheet Constants
-        public string clickstreamcolumn = "F";          //Column containing clickstream names in clickstream report
-        public string clickstreamkeycolumn = "D";          //Column containing clickstream key message names in clickstream report
-        public string clickstreamprescolumn = "K";                 //Column containing presentation IDs in presentation report
-
+        public string clickstreamcolumn = "C";          //Column containing clickstream names in clickstream report
+        public string clickstreamkeycolumn = "A";          //Column containing clickstream key message names in clickstream report
+        public string clickstreamprescolumn = "D";                 //Column containing presentation IDs in presentation report
+/*
+ * Not Yet Implemented
         public string veevaprescolumn = "F";          //Column containing presentation IDs in veeva report
         public string veevakeycolumn = "D";          //Column containing clickstream key message names in veeva report
         public string veevasharedcolumn = "K";       //Column containing shared key message values in veeva report          
+*/
 
         public string prescolumn = "D";                 //Column containing presentation IDs in presentation report
 
@@ -64,6 +66,7 @@ namespace ManageMetadata
         #endregion Paths 
 
         public int[] NonMetadataColumns = { 1, 9, 11 };     //Index of columns which do not appear in metadata sheet but do appear in publishing form
+        public int[] NonMetadataRows = { 18,19};     //Index of rows which do not appear in metadata sheet but do appear in publishing form
 
         public bool recusePubFolders = false;               //Whether or not to recurse folders in the publising forms
 
@@ -184,7 +187,7 @@ namespace ManageMetadata
         {
             SortedDictionary<string, string> missingsharedfolder = new SortedDictionary<string, string>();
             HashSet<string> lines = new HashSet<string>();
-            lines.Add("Shared Assets Missing from Veeva:");
+            lines.Add("Shared Assets Missing from disk:");
             string[] headermessage = new string[] { "Shared Folders found on disk but not found in publishing forms" };
             string[] sucessheadermessage = new string[] { "", "***Shared Folders matched from disk to publishing forms***", "" };
             string[] veevaheadermessage = new string[] { "", "Shared Folders found on disk but not found in publishing forms", "" };
@@ -224,7 +227,7 @@ namespace ManageMetadata
             if (shares.ContainsValue(true))
             {
                 var matches = shares.Where(pair => pair.Value != true).Select(pair => pair.Key);
-                System.IO.File.WriteAllLines(folderPath + "\\SharedKeys" + logfile, headermessage);
+                System.IO.File.AppendAllLines(folderPath + "\\SharedKeys" + logfile, headermessage);
                 System.IO.File.AppendAllLines(folderPath + "\\SharedKeys" + logfile, matches.ToArray<string>());
             }
 
@@ -468,7 +471,7 @@ namespace ManageMetadata
             {
                 var matches = sourcefolders.Where(pair => pair.Value == true).Select(pair => pair.Key);
                 Console.Write(matches.ToString());
-                System.IO.File.WriteAllLines(folderPath + "\\" + logfile, successheadermessage);
+                System.IO.File.AppendAllLines(folderPath + "\\" + logfile, successheadermessage);
                 System.IO.File.AppendAllLines(folderPath + "\\" + logfile, matches.ToArray<string>());
             }
 
@@ -483,12 +486,22 @@ namespace ManageMetadata
             listFileNames(folderPath);
             foreach (var f in pubforms) { 
                 SLDocument sl = new SLDocument(folderPath + "\\" + f.Value);
+
+                //Select Publishing tab
+                sl.SelectWorksheet(PresTab);
                 // delete 1 column at column 6 - sl.DeleteColumn(6, 1);
                 foreach (var i in NonMetadataColumns)
                 {
                     sl.DeleteColumn(i, 1);
                 }
-                sl.SaveAs(folderPath + "\\" + f.Value + " - Metadata.xlsx");
+
+                foreach (var i in NonMetadataRows)
+                {
+                    sl.DeleteRow(i, 1);
+                }
+
+
+                sl.SaveAs(folderPath + "\\METADATA-" + f.Value + ".xlsx");
             }
         }
 
@@ -627,7 +640,7 @@ namespace ManageMetadata
             {
                 var matches = reportclickstreams.Where(pair => pair.Value == true).Select(pair => pair.Key);
                 Console.Write(matches.ToString());
-                System.IO.File.WriteAllLines(folderPath + "\\Clickstream" + logfile, successheadermessage);
+                System.IO.File.AppendAllLines(folderPath + "\\Clickstream" + logfile, successheadermessage);
                 System.IO.File.AppendAllLines(folderPath + "\\Clickstream" + logfile, matches.ToArray<string>());
             }
 
