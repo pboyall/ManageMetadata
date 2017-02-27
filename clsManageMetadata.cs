@@ -318,6 +318,22 @@ namespace ManageMetadata
                 string clickstream = pubform.GetCellValueAsString(pubclickstreamcolumn + j);               //Clickstream name
                 string clickstreamkey = pubform.GetCellValueAsString(pubclickstreamkeycolumn + j);         //Key Message Number
                 clickstreamkey = String.Format("{0:0.00}", clickstreamkey);
+
+                //Deal with the ones where James has put the name in as well as the number. Clunky Christmas Eve coding.
+                int clickstreamkeyint;
+                if (int.TryParse(clickstreamkey, out clickstreamkeyint))
+                {
+                    //Already an integer
+                    clickstreamkey = clickstreamkeyint.ToString();
+                }
+                else
+                {
+                    int endindex = clickstreamkey.IndexOf(" ");
+                    if (endindex > 0) { 
+                        clickstreamkey = clickstreamkey.Substring(0, endindex);
+                    }
+                }
+
                 string clickstreamname = "";
                 bool hasValue = keymessagenumberstonames.TryGetValue(clickstreamkey, out clickstreamname);                                                                                           //Lookup Key Message Number using dictionary generated earlier
                 if (!hasValue) { }  //TODO: Handle the lack of a lookup?
@@ -699,7 +715,7 @@ namespace ManageMetadata
                 }
             }
 
-            //Identify any pubforms that are still invalid (i.e. not presenation in veeva matches)
+            //Identify any pubforms that are still invalid (i.e. no presenation in veeva matches)
 
             if (pubformpres.ContainsValue(false))
             {
