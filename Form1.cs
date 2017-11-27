@@ -46,48 +46,56 @@ namespace ManageMetadata
 
         private void btnValidateKeyMessageNames_Click(object sender, EventArgs e)
         {
-            mm.initialise();
-            mm.validateKeyMessages();
-            //Populate Treeview
-            SortedDictionary<string, string> KeyMessages = mm.getPresentationsAndKeyMessages();     //KeyMessage, PresID
-            
-            this.trvPresentations.BeginUpdate();
-            this.trvPresentations.Nodes.Clear();
-            //this.trvPresentations.Nodes.Add(mm.getProjectName());
-            //Add Presentation Names
-
-            List<String> PresentationList = new List<String>();
-            PresentationList = KeyMessages.Values.Distinct().ToList();
-            PresentationList.Sort();
-
-            foreach (var v in PresentationList)
+            try
             {
-                this.trvPresentations.Nodes.Add(v.ToString(), v.ToString());
-            }
-            //For each presentation add the key messages
-            foreach( TreeNode node in trvPresentations.Nodes)
-            {
-                //Get Key messages for this presentation
-                var x = mm.getSortedKeyMessages(node.Text.ToString());
-                //var k = from item in KeyMessages where item.Value.ToString() == node.Text.ToString() select item.Key.ToString();
-                //foreach (var j in x)
-                //{node.Nodes.Add(j.ToString());}
-                foreach (var j in x) {
-                    node.Nodes.Add(j.Value.ToString());
+                mm.initialise();
+                mm.validateKeyMessages();
+                //Populate Treeview
+                SortedDictionary<string, string> KeyMessages = mm.getPresentationsAndKeyMessages();     //KeyMessage, PresID
+
+                this.trvPresentations.BeginUpdate();
+                this.trvPresentations.Nodes.Clear();
+                //this.trvPresentations.Nodes.Add(mm.getProjectName());
+                //Add Presentation Names
+
+                List<String> PresentationList = new List<String>();
+                PresentationList = KeyMessages.Values.Distinct().ToList();
+                PresentationList.Sort();
+
+                foreach (var v in PresentationList)
+                {
+                    this.trvPresentations.Nodes.Add(v.ToString(), v.ToString());
                 }
-            }
-            this.trvPresentations.EndUpdate();
+                //For each presentation add the key messages
+                foreach (TreeNode node in trvPresentations.Nodes)
+                {
+                    //Get Key messages for this presentation
+                    var x = mm.getSortedKeyMessages(node.Text.ToString());
+                    //var k = from item in KeyMessages where item.Value.ToString() == node.Text.ToString() select item.Key.ToString();
+                    //foreach (var j in x)
+                    //{node.Nodes.Add(j.ToString());}
+                    foreach (var j in x)
+                    {
+                        node.Nodes.Add(j.Value.ToString());
+                    }
+                }
+                this.trvPresentations.EndUpdate();
 
-            this.trvSharedKeyMessages.BeginUpdate();
-            this.trvSharedKeyMessages.Nodes.Clear();
-            SortedDictionary<string, string> SharedKeyMessages = mm.getSharedKeyMessages();
-            foreach (var v in SharedKeyMessages.ToList())
+                this.trvSharedKeyMessages.BeginUpdate();
+                this.trvSharedKeyMessages.Nodes.Clear();
+                SortedDictionary<string, string> SharedKeyMessages = mm.getSharedKeyMessages();
+                foreach (var v in SharedKeyMessages.ToList())
+                {
+                    TreeNode thisNode = this.trvSharedKeyMessages.Nodes.Add(v.Value.ToString());
+                    thisNode.Nodes.Add(v.Key.ToString());
+                }
+
+                this.trvSharedKeyMessages.EndUpdate();
+            }
+            catch (Exception er)
             {
-                TreeNode thisNode = this.trvSharedKeyMessages.Nodes.Add(v.Value.ToString());
-                thisNode.Nodes.Add(v.Key.ToString());
+                MessageBox.Show("Unable to Validate Key message Names");
             }
-
-            this.trvSharedKeyMessages.EndUpdate();
 
         }
 
@@ -117,7 +125,13 @@ namespace ManageMetadata
         private void btnValClickstreams_Click(object sender, EventArgs e)
         {
             mm.initialise();
-            mm.validateClickstreams();
+            try
+            {
+                mm.validateClickstreams();
+            }
+            catch (Exception err) {
+                MessageBox.Show("");
+            }
         }
 
         private void btnMakeSourceFolders_Click(object sender, EventArgs e)
@@ -164,8 +178,13 @@ namespace ManageMetadata
 
         private void btnValidatePresentations_Click(object sender, EventArgs e)
         {
+            try { 
             mm.initialise();
             mm.validatePresentations();
+            }catch(Exception err)
+            {
+                MessageBox.Show("Error - check presentation report exists");
+            }
         }
 
         private void btnPresentationReport_Click(object sender, EventArgs e)
@@ -246,6 +265,31 @@ namespace ManageMetadata
             txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\UVESPA\\ClickstreamReport.xlsx";
             txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\UVESPA\\PresentationReport.xlsx";
 
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\RA";
+            txtSource.Text = "g:\\code\\ra_uk_2016_veeva";
+            txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\RA\\ClickstreamReport.xlsx";
+            txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\RA\\PresentationReport.xlsx";
+
+        }
+
+        private void btnDUO_Click(object sender, EventArgs e)
+        {
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\DUO";
+            txtSource.Text = "g:\\code\\duodopa-uk-veeva";
+            txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\DUO\\ClickstreamReport.xlsx";
+            txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\DUO\\PresentationReport.xlsx";
+        }
+
+        private void btnAC_Click(object sender, EventArgs e)
+        {
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\AC";
+            txtSource.Text = "g:\\code\\Abbvie-Care-April-2017-UK";
+            txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\AC\\ClickstreamReport.xlsx";
+            txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\AC\\PresentationReport.xlsx";
         }
     }
 }

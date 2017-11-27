@@ -71,6 +71,9 @@
             this.txtPresentation = new System.Windows.Forms.TextBox();
             this.txtClickstream = new System.Windows.Forms.TextBox();
             this.btnUVSpa = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
+            this.btnDUO = new System.Windows.Forms.Button();
+            this.btnAC = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnMakeMetaFromPub
@@ -406,11 +409,44 @@
             this.btnUVSpa.UseVisualStyleBackColor = true;
             this.btnUVSpa.Click += new System.EventHandler(this.btnUVSpa_Click);
             // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(339, 160);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 37;
+            this.button5.Text = "RA";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // btnDUO
+            // 
+            this.btnDUO.Location = new System.Drawing.Point(420, 160);
+            this.btnDUO.Name = "btnDUO";
+            this.btnDUO.Size = new System.Drawing.Size(75, 23);
+            this.btnDUO.TabIndex = 38;
+            this.btnDUO.Text = "DUO";
+            this.btnDUO.UseVisualStyleBackColor = true;
+            this.btnDUO.Click += new System.EventHandler(this.btnDUO_Click);
+            // 
+            // btnAC
+            // 
+            this.btnAC.Location = new System.Drawing.Point(501, 160);
+            this.btnAC.Name = "btnAC";
+            this.btnAC.Size = new System.Drawing.Size(75, 23);
+            this.btnAC.TabIndex = 39;
+            this.btnAC.Text = "AC";
+            this.btnAC.UseVisualStyleBackColor = true;
+            this.btnAC.Click += new System.EventHandler(this.btnAC_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1835, 869);
+            this.Controls.Add(this.btnAC);
+            this.Controls.Add(this.btnDUO);
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.btnUVSpa);
             this.Controls.Add(this.txtPresentation);
             this.Controls.Add(this.txtClickstream);
@@ -492,6 +528,9 @@
         private System.Windows.Forms.TextBox txtPresentation;
         private System.Windows.Forms.TextBox txtClickstream;
         private System.Windows.Forms.Button btnUVSpa;
+        private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button btnDUO;
+        private System.Windows.Forms.Button btnAC;
     }
 }
 

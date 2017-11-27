@@ -288,7 +288,14 @@ namespace ManageMetadata
             }
                 //Resort thisPresKeymessages into display order
                 thisPresKeyMessages.OrderBy(key => key.Key);
-                orderedKeymessages.Add(PresID, thisPresKeyMessages);
+                try
+                {
+                    orderedKeymessages.Add(PresID, thisPresKeyMessages);
+                }
+                catch (Exception e)
+                {
+                if (e.HResult == -2147024809) { } else { throw e; }
+            }
             }
 
         //TODO refactor as similar code to above
