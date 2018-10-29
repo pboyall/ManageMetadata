@@ -115,8 +115,8 @@ namespace ManageMetadata
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            mm.sourcePath = "G:\\Code\\axial_spa";
-            mm.FolderPath = "G:\\ManageMetadataSource\\Publishing Forms";
+            mm.sourcePath = "G:\\Code\\spa-uk-2017-veeva";
+            mm.FolderPath = "G:\\ManageMetadataSource\\Publishing Forms\\SpA\\Metadata";
             mm.mappingfiles = "G:\\ManageMetadataSource\\Original Publishing Forms";
             mm.clickstreamfile = "G:\\ManageMetadataSource\\Clickstreams\\ClickstreamReport.xlsx";
             mm.presrepfile = "G:\\ManageMetadataSource\\Clickstreams\\PresentationReport.xlsx";
@@ -209,8 +209,8 @@ namespace ManageMetadata
 
         private void btnSpA_Click(object sender, EventArgs e)
         {
-            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\SpA";
-            txtSource.Text = "g:\\code\\axial_spa";
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\SpA\\Metadata";
+            txtSource.Text = "G:\\Code\\spa-uk-2017-veeva";
             txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\SpA\\ClickstreamReport.xlsx";
             txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\SpA\\PresentationReport.xlsx";
         }
@@ -290,6 +290,24 @@ namespace ManageMetadata
             txtSource.Text = "g:\\code\\Abbvie-Care-April-2017-UK";
             txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\AC\\ClickstreamReport.xlsx";
             txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\AC\\PresentationReport.xlsx";
+        }
+
+        private void lblFolder_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnVON_Click(object sender, EventArgs e)
+        {
+            txtMetadata.Text = "G:\\ManageMetadataSource\\Publishing Forms\\VON";
+            txtSource.Text = "G:\\Code\\venclyxto-uk-veeva";
+            txtClickstream.Text = "G:\\ManageMetadataSource\\Clickstreams\\CON\\ClickstreamReport.xlsx";
+            txtPresentation.Text = "G:\\ManageMetadataSource\\Clickstreams\\VON\\PresentationReport.xlsx";
         }
     }
 }

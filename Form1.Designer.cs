@@ -74,6 +74,7 @@
             this.button5 = new System.Windows.Forms.Button();
             this.btnDUO = new System.Windows.Forms.Button();
             this.btnAC = new System.Windows.Forms.Button();
+            this.btnVON = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // btnMakeMetaFromPub
@@ -134,6 +135,7 @@
             this.lblFolder.Size = new System.Drawing.Size(83, 13);
             this.lblFolder.TabIndex = 4;
             this.lblFolder.Text = "Metadata Forms";
+            this.lblFolder.Click += new System.EventHandler(this.lblFolder_Click);
             // 
             // btnBrowse
             // 
@@ -237,6 +239,7 @@
             this.label1.Size = new System.Drawing.Size(83, 13);
             this.label1.TabIndex = 7;
             this.label1.Text = "Metadata Forms";
+            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // label3
             // 
@@ -439,11 +442,22 @@
             this.btnAC.UseVisualStyleBackColor = true;
             this.btnAC.Click += new System.EventHandler(this.btnAC_Click);
             // 
+            // btnVON
+            // 
+            this.btnVON.Location = new System.Drawing.Point(582, 160);
+            this.btnVON.Name = "btnVON";
+            this.btnVON.Size = new System.Drawing.Size(75, 23);
+            this.btnVON.TabIndex = 40;
+            this.btnVON.Text = "VON";
+            this.btnVON.UseVisualStyleBackColor = true;
+            this.btnVON.Click += new System.EventHandler(this.btnVON_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1835, 869);
+            this.Controls.Add(this.btnVON);
             this.Controls.Add(this.btnAC);
             this.Controls.Add(this.btnDUO);
             this.Controls.Add(this.button5);
@@ -531,6 +545,7 @@
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.Button btnDUO;
         private System.Windows.Forms.Button btnAC;
+        private System.Windows.Forms.Button btnVON;
     }
 }
 

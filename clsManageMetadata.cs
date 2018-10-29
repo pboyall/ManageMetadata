@@ -21,19 +21,25 @@ namespace ManageMetadata
 
         #region Publishing Form Constants
         public string KeyMessageCol = "K";              //Column containing zip file names in publishing form.  Do we need to validate Zip file names against the Key Message Name column too?
+        public string MetadataKeyMessageCol = "H";              //Column containing zip file names in metadata form.  
+        public string Metadatakeynumbercolumn = "B";
+        public string Metadatakeynamecolumn = "E";
         public string pubclickstreamkeycolumn = "D";          //Column containing clickstream key message numbers in publishing form
         public string pubkeynumbercolumn = "C";          //Column containing presentation tab key message numbers in publishing form
         public string pubdisplaynumbercolumn = "D";          //Column containing presentation tab display numbers in publishing form
         public string pubclickstreamcolumn = "A";          //Column containing clickstream names in publishing form
         public string pubsharedcolumn = "B";          //Column containing shared key message names in publishing form
 
-        public string PresIDCell = "C22";
+        public string PresIDCell = "C24";
+        public string MetaPresIDCell = "C20";
         public int keymessagestartrow = 38;             //Row where key messages start in publishing form
+        public int metakeymessagestartrow = 35;
         public int clickstreamstartrow = 4;             //Row where clickstream start in publishing form
         public int repstartrow = 1;             //Row where clickstream (and pres ids) start in report 
         public int SharedOffset = 5;            //Gap from Shared Message row header to row containing file name
 
         public string PresTab = "Publishing Objects"; //"Presentation-Slide metadata";
+        public string MetaPresTab = "Presentation-Slide metadata";  
         public string ClickTab = "clickstream data";
         #endregion Publishing Form Constants
 
@@ -84,6 +90,8 @@ namespace ManageMetadata
         private SortedDictionary<string, SortedDictionary<int, string>> orderedKeymessages;           //  Pres ID, <DisplayOrder, KeymessageName>
 
         private SortedDictionary<string, string> sharedkeymessages;           //KeyMessage, PresID    //Should just be one
+        HashSet<string> caseErrors;
+        private HashSet<string> unabletoreadErrors;
 
         private string  pubfolder;     
         private string metafolder;
@@ -261,9 +269,9 @@ namespace ManageMetadata
                         if (current)
                         {
                             thisPresKeyMessages.Add(DisplayOrder, kmzip.Replace(".zip", ""));           //Doing it this way round means that where a slide is duplicated we still get it in each presentation for the tree view
-                            keymessages.Add(kmzip.Replace(".zip", ""), PresID);
+                            keymessages.Add(kmzip.Replace(".zip", ""), PresID);       //Temp To Lower
                         }
-                        else{oldkeymessages.Add(kmzip.Replace(".zip", ""), PresID);}
+                        else{oldkeymessages.Add(kmzip.Replace(".zip", ""), PresID);}            //Temp To Lower
                     }
                     catch (Exception e)
                     {if (e.HResult == -2147024809){
@@ -302,20 +310,27 @@ namespace ManageMetadata
         //Extract Clickstream details from publishing form
         private void ExtractClickstream(string filename, string thisFolder)
         {
+            caseErrors = new HashSet<string>();
+            unabletoreadErrors = new HashSet<string>();
             //Extract clickstreams from publishing form
             SLDocument pubform = openPubForm(thisFolder + "\\" + filename);
-            pubform.SelectWorksheet(PresTab); 
-            string PresID = pubform.GetCellValueAsString(PresIDCell);
+            var worksheetnames = pubform.GetWorksheetNames();
+            caseErrors.Add("Case Sensitive Errors :");
+            pubform.SelectWorksheet(MetaPresTab);
+            string PresID = pubform.GetCellValueAsString(MetaPresIDCell);
+            unabletoreadErrors.Add(PresID);
             SLWorksheetStatistics stats1 = pubform.GetWorksheetStatistics();
             Dictionary<string, string> keymessagenumberstonames = new Dictionary<string, string>();
+            Dictionary<string, string> caseinsensitivekeymessagenumberstonames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             //Get Key Message Number to Name Mapping - no need to store Presentation id as disposable lookup dictionary on a per spreadsheet basis 
-            for (int j = keymessagestartrow; j <= stats1.EndRowIndex; j++)
+            for (int j = metakeymessagestartrow; j <= stats1.EndRowIndex; j++)
             {
-                
-                string kmzip = pubform.GetCellValueAsString(KeyMessageCol + j);
-                string kmnumber =  pubform.GetCellValueAsString(pubkeynumbercolumn + j);
+                string kmnumber =  pubform.GetCellValueAsString(Metadatakeynumbercolumn + j);
                 kmnumber = String.Format("{0:0.00}", kmnumber);
-                try { keymessagenumberstonames.Add(kmnumber, kmzip);  } catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
+                string kmname = pubform.GetCellValueAsString(Metadatakeynamecolumn + j);
+                string kmzip = kmnumber + "_" + pubform.GetCellValueAsString(MetadataKeyMessageCol + j) + ".zip";
+                try { keymessagenumberstonames.Add(kmnumber + "_" + kmname, kmzip);  } catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
+                try { caseinsensitivekeymessagenumberstonames.Add(kmnumber + "_" + kmname, kmzip); } catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
             }
             pubform.SelectWorksheet(ClickTab);
             stats1 = pubform.GetWorksheetStatistics();
@@ -324,31 +339,59 @@ namespace ManageMetadata
                 //Need to resolve the decimal issue (e.g. Pub Form has stored just 61 formatted to 61.00 while Clickstream Form has 61.00 stored actually as 61.00
                 string clickstream = pubform.GetCellValueAsString(pubclickstreamcolumn + j);               //Clickstream name
                 string clickstreamkey = pubform.GetCellValueAsString(pubclickstreamkeycolumn + j);         //Key Message Number
-                clickstreamkey = String.Format("{0:0.00}", clickstreamkey);
+                                                                                                           /*                clickstreamkey = String.Format("{0:0.00}", clickstreamkey);
+                                                                                                                           //Quick bodge to make match new metadata sheets
+                                                                                                                           //string clickstreamname = clickstream + ".zip";
 
-                //Deal with the ones where James has put the name in as well as the number. Clunky Christmas Eve coding.
-                int clickstreamkeyint;
-                if (int.TryParse(clickstreamkey, out clickstreamkeyint))
+                                                                                                                           //Deal with the ones where James has put the name in as well as the number. Clunky Christmas Eve coding.
+
+                                                                                                                           int clickstreamkeyint;
+                                                                                                                           if (int.TryParse(clickstreamkey, out clickstreamkeyint))
+                                                                                                                           {
+                                                                                                                               //Already an integer
+                                                                                                                               clickstreamkey = clickstreamkeyint.ToString();
+                                                                                                                           }
+                                                                                                                           else
+                                                                                                                           {
+                                                                                                                               int endindex = clickstreamkey.IndexOf(" ");
+                                                                                                                               if (endindex > 0) { 
+                                                                                                                                   clickstreamkey = clickstreamkey.Substring(0, endindex);
+                                                                                                                               }
+                                                                                                                           }
+
+                                                                                                                           string clickstreamname = "";
+                                                                                                                           bool hasValue = keymessagenumberstonames.TryGetValue(clickstreamkey, out clickstreamname);                                                                                           //Lookup Key Message Number using dictionary generated earlier
+
+                                                                                                                           if (!hasValue) { }  //TODO: Handle the lack of a lookup?
+                                                                                                           */
+                string clickstreamname = "";
+                if (clickstream == "")
                 {
-                    //Already an integer
-                    clickstreamkey = clickstreamkeyint.ToString();
+                    unabletoreadErrors.Add(clickstreamkey);
                 }
                 else
                 {
-                    int endindex = clickstreamkey.IndexOf(" ");
-                    if (endindex > 0) { 
-                        clickstreamkey = clickstreamkey.Substring(0, endindex);
+                    bool hasValue = keymessagenumberstonames.TryGetValue(clickstreamkey, out clickstreamname);                                                                                           //Lookup Key Message Number using dictionary generated earlier
+                    if (clickstream != "" && clickstreamname != "")
+                    {
+                        try { clickstreams.Add(PresID + "#" + clickstreamname + "@" + clickstream, clickstream); }                //Concatenated PresID, Key Name and Clicksteam so can still just use string dictionaries in case can refactor later to be same as key message
+                        catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
+                    }
+                    else
+                    {
+                        hasValue = caseinsensitivekeymessagenumberstonames.TryGetValue(clickstreamkey, out clickstreamname);
+                        caseErrors.Add(clickstreamkey);
+                        if (clickstream != "" && clickstreamname != "")
+                        {
+                            try { clickstreams.Add(PresID + "#" + clickstreamname + "@" + clickstream, clickstream); }                //Concatenated PresID, Key Name and Clicksteam so can still just use string dictionaries in case can refactor later to be same as key message
+                            catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
+                        }
                     }
                 }
-
-                string clickstreamname = "";
-                bool hasValue = keymessagenumberstonames.TryGetValue(clickstreamkey, out clickstreamname);                                                                                           //Lookup Key Message Number using dictionary generated earlier
-                if (!hasValue) { }  //TODO: Handle the lack of a lookup?
-                if (clickstream != "") { 
-                    try { clickstreams.Add(PresID + "#" + clickstreamname + "@" + clickstream, clickstream); }                //Concatenated PresID, Key Name and Clicksteam so can still just use string dictionaries in case can refactor later to be same as key message
-                    catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
-                }
             }
+
+            System.IO.File.AppendAllLines(folderPath + "\\unabletoreadErrors.txt", unabletoreadErrors.ToArray<string>());
+
         }
         //TODO: Refactor these two functions into one - only difference is the dictionary being iterated
         //iterate publishing forms and extract key messages
@@ -379,6 +422,7 @@ namespace ManageMetadata
         {
             //List publising forms
             listFileNames(pubfolder);           //Populate list of Publishing Form spreadsheets
+            System.IO.File.WriteAllLines(folderPath + "\\unabletoreadErrors.txt", new HashSet<string>());
             //Extract Clickstreams from them
             foreach (var f in pubforms)
             {
@@ -396,7 +440,15 @@ namespace ManageMetadata
                 List<string> dirs = new List<string>(Directory.EnumerateDirectories(sourcePath));
                 foreach (var dir in dirs)
                 {
-                    sourcefolders.Add(dir.Substring(dir.LastIndexOf("\\") + 1), false);
+                    sourcefolders.Add(dir.Substring(dir.LastIndexOf("\\") + 1), false);       
+                }
+                if (sourcefolders.Count == 0)
+                {
+                    List<string> zips = new List<string>(Directory.EnumerateFiles(sourcePath, "*.zip"));
+                    foreach (var zip in zips)
+                    {
+                        sourcefolders.Add(zip.Substring(zip.LastIndexOf("\\") + 1).Replace(".zip", ""), false);
+                    }
                 }
             }
             catch (UnauthorizedAccessException UAEx)
@@ -458,7 +510,7 @@ namespace ManageMetadata
             //Don't use a clever (big O) comparison as may not be a perfect match
             foreach (var v in keymessages)
             {
-                if (sourcefolders.ContainsKey(v.Key))
+                if (sourcefolders.ContainsKey(v.Key))     //Temp to test theory
                 {
                     sourcefolders[v.Key] = true;      //Flag as validated
                 }
@@ -511,20 +563,37 @@ namespace ManageMetadata
                 SLDocument sl = new SLDocument(folderPath + "\\" + f.Value);
 
                 //Select Publishing tab
-                sl.SelectWorksheet(PresTab);
+                sl.SelectWorksheet(MetaPresTab);
+
+                //Try and rename something in the header row
+                //Big "Source"
+                //Small "Global master slides or locally developed slides that maintain the main message of that slide = GL; otherwise set to LO"
+                //D34
+                SLRstType Heading1 = new SLRstType();
+                SLFont Big = new SLFont();
+                SLFont Small = new SLFont();
+                Big.Bold = true;
+                Big.SetFont("Calibri", 14);
+                Small.SetFont("Calibri", 9);
+                Heading1.AppendText("PBSource", Big);
+                Heading1.AppendText("Global PB master slides or locally developed slides that maintain the main message of that slide = GL; otherwise set to LO", Small); 
+                sl.SetCellValue("D" + (metakeymessagestartrow - 1), Heading1);
+
+                /*
                 // delete 1 column at column 6 - sl.DeleteColumn(6, 1);
                 foreach (var i in NonMetadataColumns)
                 {
                     sl.DeleteColumn(i, 1);
                 }
 
-                foreach (var i in NonMetadataRows)
+                * foreach (var i in NonMetadataRows)
                 {
                     sl.DeleteRow(i, 1);
                 }
+                */
 
 
-                sl.SaveAs(folderPath + "\\METADATA-" + f.Value + ".xlsx");
+                sl.SaveAs(folderPath + "\\METADATATEST-" + f.Value + ".xlsx");
             }
         }
 
@@ -598,7 +667,7 @@ namespace ManageMetadata
 
         public void validateClickstreams()
         {
-            //Open Excel Clickstream Report File and extract list of clickstreamids
+            //Open Excel Clickstream *Report* File and extract list of clickstreamids
             SLDocument repform = new SLDocument(clickstreamfile);
             Dictionary<string, bool> reportclickstreams = new Dictionary<string, bool>();           //Bool indicates validated
             SLWorksheetStatistics stats1 = repform.GetWorksheetStatistics();
@@ -611,7 +680,7 @@ namespace ManageMetadata
                 catch (Exception e) { if (e.HResult == -2147024809) { } else { throw e; } }                  //Allow for duplicates
             }
 
-            //Query all presentations for CLickstream information
+            //Query all presentations from metadatasheets for CLickstream information
             ExtractClickStreamNames();
             //Run comparison
             CompareClickstreams(reportclickstreams);
@@ -626,6 +695,9 @@ namespace ManageMetadata
             string[] headermessage = new string[] { "Clickstreams found in Veeva but not found in publishing forms" };
             string[] successheadermessage = new string[] { "", "***Clickstreams Matched***", "" };
             //Validate names in publishing form match folders
+
+            var caseInsensitivereportsDictionary = new Dictionary<string, bool>(reportclickstreams, StringComparer.OrdinalIgnoreCase);
+
             //Don't use a clever (big O) comparison as may not be a perfect match
             foreach (var v in clickstreams)
             {
@@ -635,7 +707,15 @@ namespace ManageMetadata
                 }
                 else
                 {
-                    //Key Message from spreadsheets has no corresponding folder
+                    //Check if a case error
+                    if (caseInsensitivereportsDictionary.ContainsKey(v.Key))
+                    {
+                        var myKey = caseInsensitivereportsDictionary.FirstOrDefault(x => x.Value);
+
+                        caseErrors.Add(v.Key + " : " );
+                        reportclickstreams[v.Key] = true;      //Flag as validated
+                    }
+                    //Key Message from spreadsheets has no corresponding report clickstream
                     missingstreams.Add(v.Key, v.Value);
                 }
             }
@@ -650,14 +730,22 @@ namespace ManageMetadata
                 System.IO.File.AppendAllLines(folderPath + "\\Clickstream" + logfile, matches.ToArray<string>());
             }
 
-            //And write out the results of identifing if any messages in the spreadsheets lack a corresponding folder
+            //And write out the results of identifing if any messages in the spreadsheets lack a corresponding row in the report
+            var caseInsensitiveDictionary = new Dictionary<string, string>(missingstreams, StringComparer.OrdinalIgnoreCase);
             foreach (var v in missingstreams)
             {
-                Console.WriteLine(v.Key);
-                lines.Add(v.Key);
+                //Check if it's a case issue
+                if (caseInsensitiveDictionary.ContainsKey(v.Key))
+                {
+                    caseErrors.Add(v.Key);
+                }
+                else { 
+                    Console.WriteLine(v.Key);
+                    lines.Add(v.Key);
+                }
             }
             System.IO.File.AppendAllLines(folderPath + "\\Clickstream" + logfile, lines.ToArray<string>());
-
+            System.IO.File.WriteAllLines(folderPath + "\\ClickstreamCaseErrors" + logfile, caseErrors);
             //I think it is also worth writing out the clickstreams that sucessfully matched
             if (reportclickstreams.ContainsValue(true))
             {
